@@ -1,0 +1,9 @@
+{
+  "cost_metrics": {
+    "cost_copilot": 26361491.40999999,
+    "cost_contest_all": 13269222.270000001,
+    "cost_accept_all": 30698288.289999958,
+    "savings_vs_contest_all": -13092269.139999988,
+    "savings_vs_accept_all": 4336796.879999969
+  }
+}
