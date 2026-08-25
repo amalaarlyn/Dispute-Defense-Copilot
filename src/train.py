@@ -20,6 +20,9 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'data'))
 from evidence_verifier import extract_features_batch as extract_verifier_features
 from outcome_predictor import extract_features_batch as extract_predictor_features
 from decision_policy import evaluate_decision_policy, cost_weighted_evaluation
+from audit_logger import get_logger, log_training_complete
+
+_logger = get_logger(__name__)
 
 def load_data(filepath):
     with open(filepath, "r") as f:
@@ -158,7 +161,9 @@ def main():
     }
     with open(os.path.join(models_dir, "evaluation_report.json"), "w") as f:
         json.dump(metrics, f, indent=2)
-        
+
+    log_training_complete(metrics)
+    _logger.info("Training complete — models and metrics saved to models/")
     print("\nModels and metrics saved to models/")
 
 if __name__ == "__main__":

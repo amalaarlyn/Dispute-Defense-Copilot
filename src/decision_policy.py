@@ -6,6 +6,8 @@ document verifier outputs, and what-if engine projections into a single
 recommended action. Never auto-executes.
 """
 
+from audit_logger import log_decision as _audit_log_decision
+
 def evaluate_decision_policy(
     win_prob,
     evidence_completeness,
@@ -20,10 +22,13 @@ def evaluate_decision_policy(
     # 1. Check for red flags -> ESCALATE
     has_tamper = any(doc.get("features", {}).get("tamper_flag", False) for doc in verifier_results)
     if has_tamper:
-        return {
+        result = {
             "action": "ESCALATE",
             "reason": "Tamper indicators detected on submitted evidence. Manual review required."
         }
+        _audit_log_decision("N/A", result["action"], result["reason"],
+                            {"win_prob": win_prob, "trigger": "tamper_detected"})
+        return result
         
     has_major_mismatch = False
     for doc in verifier_results:
@@ -32,26 +37,37 @@ def evaluate_decision_policy(
                 has_major_mismatch = True
     
     if has_major_mismatch:
-        return {
+        result = {
             "action": "ESCALATE",
             "reason": "Contradictory or severely mismatched fields detected in evidence."
         }
+        _audit_log_decision("N/A", result["action"], result["reason"],
+                            {"win_prob": win_prob, "trigger": "major_mismatch"})
+        return result
 
     # 2. Check for strong case -> CONTEST
     if win_prob >= 0.70 and evidence_completeness >= 0.80:
-        return {
+        result = {
             "action": "CONTEST",
             "reason": f"Strong case with {win_prob:.0%} win probability and robust evidence. Recommended to contest immediately."
         }
+        _audit_log_decision("N/A", result["action"], result["reason"],
+                            {"win_prob": win_prob, "evidence_completeness": evidence_completeness,
+                             "trigger": "strong_case"})
+        return result
         
     # 3. Check for high-impact missing evidence -> OBTAIN
     if whatif_results and hours_remaining > 24:
         top_whatif = whatif_results[0]
         if top_whatif["delta"] > 0.10:
-            return {
+            result = {
                 "action": "OBTAIN",
                 "reason": f"Obtain {top_whatif['evidence_type']}. Projected win probability will rise from {win_prob:.0%} to {top_whatif['projected_prob']:.0%}."
             }
+            _audit_log_decision("N/A", result["action"], result["reason"],
+                                {"win_prob": win_prob, "top_whatif": top_whatif,
+                                 "trigger": "high_impact_missing_evidence"})
+            return result
             
     # 4. Check for inherently weak case -> ACCEPT
     # Even if we got the best missing evidence, would we win?
@@ -60,16 +76,23 @@ def evaluate_decision_policy(
         best_possible_prob = whatif_results[0]["projected_prob"]
         
     if best_possible_prob < 0.30:
-        return {
+        result = {
             "action": "ACCEPT",
             "reason": f"Weak case (max projected win probability {best_possible_prob:.0%}). Recommended to accept the dispute to avoid arbitration fees."
         }
+        _audit_log_decision("N/A", result["action"], result["reason"],
+                            {"win_prob": win_prob, "best_possible_prob": best_possible_prob,
+                             "trigger": "weak_case"})
+        return result
         
     # 5. Default fallback -> REVIEW
-    return {
+    result = {
         "action": "REVIEW",
         "reason": f"Moderate case ({win_prob:.0%} win probability). Consider manually reviewing the dispute and available evidence."
     }
+    _audit_log_decision("N/A", result["action"], result["reason"],
+                        {"win_prob": win_prob, "trigger": "default_fallback"})
+    return result
 
 def cost_weighted_evaluation(predictions, actuals, amounts, policy_actions):
     """

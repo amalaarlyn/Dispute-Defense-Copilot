@@ -14,11 +14,24 @@ from evidence_verifier import verify_single_document
 from outcome_predictor import extract_dispute_features, predict_win_probability
 from whatif_engine import run_whatif_analysis
 from decision_policy import evaluate_decision_policy
+from audit_logger import (
+    get_logger,
+    log_dispute_analysis,
+    log_evidence_verification,
+    log_model_loaded,
+)
+
+_logger = get_logger(__name__)
 
 def load_models(model_dir):
     """Load the trained models."""
-    verifier = joblib.load(os.path.join(model_dir, "evidence_verifier.joblib"))
-    predictor = joblib.load(os.path.join(model_dir, "outcome_predictor.joblib"))
+    verifier_path = os.path.join(model_dir, "evidence_verifier.joblib")
+    predictor_path = os.path.join(model_dir, "outcome_predictor.joblib")
+    verifier = joblib.load(verifier_path)
+    predictor = joblib.load(predictor_path)
+    log_model_loaded("evidence_verifier", verifier_path)
+    log_model_loaded("outcome_predictor", predictor_path)
+    _logger.info("Models loaded from %s", model_dir)
     return verifier, predictor
 
 def analyze_dispute(dispute_rows, verifier_model, predictor_model):
@@ -40,6 +53,7 @@ def analyze_dispute(dispute_rows, verifier_model, predictor_model):
         if row.get("evidence_type"):
             res = verify_single_document(verifier_model, row)
             verifier_results.append(res)
+            log_evidence_verification(first_row.get("dispute_id", ""), res)
             
     # Update the rows with verifier outputs before passing to Predictor 
     # (In a real system, the predictor uses the verifier's output. 
@@ -66,7 +80,7 @@ def analyze_dispute(dispute_rows, verifier_model, predictor_model):
     # 5. LLM Explanation Layer (Template-based for prototype)
     narrative = decision["reason"]
     
-    return {
+    response = {
         "dispute_id": first_row.get("dispute_id"),
         "reason_code": reason_code,
         "win_probability": round(win_prob, 4),
@@ -76,3 +90,8 @@ def analyze_dispute(dispute_rows, verifier_model, predictor_model):
         "narrative": narrative,
         "features": dispute_features
     }
+
+    log_dispute_analysis(response["dispute_id"], response)
+    _logger.info("Dispute %s analyzed — action=%s, P(win)=%.2f",
+                 response["dispute_id"], decision["action"], win_prob)
+    return response
