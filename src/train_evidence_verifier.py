@@ -18,6 +18,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.metrics import (
     precision_score, recall_score, f1_score, confusion_matrix, classification_report,
 )
+import joblib
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "data"))
 from evidence_features import build_features  # noqa: E402
@@ -84,6 +85,11 @@ def main():
     # Feature importance from the "tamper_flag" and match features is the
     # most defensible thing to show a judge — it directly shows the model
     # is using the field-match signals, not guessing.
+
+    model_path = os.path.join(os.path.dirname(__file__), "..", "models", "evidence_verifier.joblib")
+    joblib.dump(model, model_path)
+    print(f"Saved model to {model_path}")
+
     return model
 
 
