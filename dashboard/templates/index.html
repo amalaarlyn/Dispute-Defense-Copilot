@@ -3,117 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dispute Defense Copilot</title>
+    <title>Dispute Defense Copilot — AI Case Resolution</title>
+    <meta name="description" content="AI-powered dispute resolution agent that investigates uncertainty before escalating to humans. Reduces human review by up to 60%.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <div class="app-container">
-        <!-- Sidebar: List of Disputes -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <h2>Disputes</h2>
-                <input type="text" id="search-input" placeholder="Search ID or Reason...">
+    <div class="app-shell">
+        <!-- Top Navigation -->
+        <nav class="top-nav">
+            <div class="nav-brand">
+                <div class="nav-logo">⚡</div>
+                <div>
+                    <span class="nav-title">Dispute Defense Copilot</span>
+                    <span class="nav-subtitle">AI Case Resolution Agent</span>
+                </div>
             </div>
-            <div class="dispute-list" id="dispute-list">
-                <!-- Populated by JS -->
-                <div class="loading">Loading disputes...</div>
+            <div class="nav-status">
+                <div class="status-indicator">
+                    <span class="status-dot online" id="agent-status-dot"></span>
+                    <span id="agent-status-text">Agent Online</span>
+                </div>
             </div>
-        </aside>
+        </nav>
 
-        <!-- Main Content: Analysis View -->
-        <main class="main-content">
-            <header class="main-header">
-                <div class="title-area">
-                    <h1>Dispute Defense Copilot</h1>
-                    <span class="badge ai-badge">AI Risk Manager</span>
-                </div>
-            </header>
-
-            <div id="analysis-view" class="analysis-view hidden">
-                <div class="dispute-meta card">
-                    <div class="meta-header">
-                        <h2 id="meta-id">DISP_123</h2>
-                        <span id="meta-reason" class="badge">reason_code</span>
-                    </div>
-                    <div class="meta-details">
-                        <div class="meta-item">
-                            <span class="meta-label">Amount</span>
-                            <span class="meta-value" id="meta-amount">₹0.00</span>
-                        </div>
-                        <div class="meta-item">
-                            <span class="meta-label">Time Remaining</span>
-                            <span class="meta-value warning" id="meta-time">24h</span>
-                        </div>
+        <!-- Main Body -->
+        <div class="app-body">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <div class="sidebar-title">Disputes</div>
+                    <div class="search-box">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <input type="text" id="search-input" placeholder="Search disputes...">
                     </div>
                 </div>
-
-                <div class="two-column">
-                    <!-- Left Column -->
-                    <div class="col-left">
-                        <div class="card recommendation-card" id="rec-card">
-                            <h3>Recommendation</h3>
-                            <div class="action-banner" id="action-banner">
-                                <span class="action-badge" id="action-badge">REVIEW</span>
-                            </div>
-                            <p class="narrative" id="narrative-text"></p>
-                        </div>
-
-                        <div class="card prediction-card">
-                            <h3>Win Probability</h3>
-                            <div class="gauge-container">
-                                <svg viewBox="0 0 100 50" class="gauge">
-                                    <path class="gauge-bg" d="M 10 50 A 40 40 0 0 1 90 50" />
-                                    <path class="gauge-value" id="gauge-path" d="M 10 50 A 40 40 0 0 1 90 50" />
-                                </svg>
-                                <div class="gauge-text" id="gauge-text">0%</div>
-                            </div>
-                        </div>
-                        
-                        <div class="card whatif-card">
-                            <h3>What-If Impact</h3>
-                            <p class="subtext">Missing evidence impact on win probability</p>
-                            <div class="whatif-list" id="whatif-list">
-                                <!-- Populated by JS -->
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Right Column -->
-                    <div class="col-right">
-                        <div class="card evidence-card">
-                            <h3>Evidence Verifier</h3>
-                            <div class="evidence-list" id="evidence-list">
-                                <!-- Populated by JS -->
-                            </div>
-                        </div>
-                        
-                        <div class="card metrics-card">
-                            <h3>System Metrics (Holdout Set)</h3>
-                            <div class="metrics-grid" id="metrics-grid">
-                                <!-- Populated by JS -->
-                            </div>
-                        </div>
-                    </div>
+                <div class="dispute-list" id="dispute-list">
+                    <div class="loading">Loading disputes…</div>
                 </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Empty State -->
+                <div id="empty-state" class="empty-state">
+                    <div class="empty-icon">🤖</div>
+                    <h1>Select a Dispute to Analyze</h1>
+                    <p>The AI Case Agent will evaluate evidence, predict outcomes, investigate uncertainty, and recommend the optimal action — all in real time.</p>
+                </div>
+
+                <!-- Analysis View (populated by JS) -->
+                <div id="analysis-view" class="main-scroll analysis-view hidden"></div>
+            </main>
+        </div>
+
+        <!-- Bottom Metrics Ribbon -->
+        <div class="metrics-ribbon" id="metrics-ribbon">
+            <div class="metric-pill">
+                <span class="metric-pill-label">Disputes Analyzed</span>
+                <span class="metric-pill-value accent" id="m-total">0</span>
+            </div>
+            <div class="metric-pill">
+                <span class="metric-pill-label">Automation Rate</span>
+                <span class="metric-pill-value highlight" id="m-automation">—</span>
+            </div>
+            <div class="metric-pill">
+                <span class="metric-pill-label">Human Review Rate</span>
+                <span class="metric-pill-value warning" id="m-human-rate">—</span>
+            </div>
+            <div class="metric-pill">
+                <span class="metric-pill-label">Agent Resolution</span>
+                <span class="metric-pill-value highlight" id="m-agent-rate">—</span>
+            </div>
+            <div class="metric-pill">
+                <span class="metric-pill-label">Review Reduction</span>
+                <span class="metric-pill-value highlight" id="m-reduction">—</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feedback Modal (hidden by default) -->
+    <div id="feedback-modal" class="modal-overlay hidden">
+        <div class="modal">
+            <h3>Override AI Recommendation</h3>
+            <p class="modal-sub">Your feedback helps the system learn. What is the correct action?</p>
+            
+            <div class="modal-field">
+                <label>Your Decision</label>
+                <select id="feedback-decision">
+                    <option value="contest">Contest the Dispute</option>
+                    <option value="accept">Accept the Chargeback</option>
+                    <option value="obtain_evidence">Gather More Evidence</option>
+                    <option value="human_review">Needs Further Human Review</option>
+                </select>
             </div>
             
-            <div id="empty-state" class="empty-state">
-                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                    <polyline points="14 2 14 8 20 8"></polyline>
-                    <line x1="16" y1="13" x2="8" y2="13"></line>
-                    <line x1="16" y1="17" x2="8" y2="17"></line>
-                    <polyline points="10 9 9 9 8 9"></polyline>
-                </svg>
-                <h2>Select a dispute to analyze</h2>
-                <p>The Copilot will evaluate submitted evidence, predict outcomes, and recommend the best course of action.</p>
+            <div class="modal-field">
+                <label>Reason for Override</label>
+                <select id="feedback-reason">
+                    <option value="evidence_not_sufficient">Evidence not sufficient</option>
+                    <option value="business_context_not_captured">Business context not captured</option>
+                    <option value="customer_exception">Customer exception / goodwill</option>
+                    <option value="document_issue">Document issue / quality</option>
+                    <option value="risk_tolerance_different">Different risk tolerance</option>
+                    <option value="deadline_concern">Deadline concern</option>
+                    <option value="other">Other</option>
+                </select>
             </div>
-        </main>
+            
+            <div class="modal-field">
+                <label>Notes (Optional)</label>
+                <textarea id="feedback-notes" placeholder="Any additional context..."></textarea>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn btn-ghost" id="feedback-cancel">Cancel</button>
+                <button class="btn btn-primary" id="feedback-submit">Submit Feedback</button>
+            </div>
+        </div>
     </div>
-    
+
     <script src="/static/app.js"></script>
 </body>
 </html>

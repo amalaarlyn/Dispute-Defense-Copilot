@@ -51,11 +51,18 @@ def _breakeven_win_prob(amount: float) -> float:
 
 def decide(win_prob: float, amount: float, hours_remaining: float, any_tamper_flagged: int,
            best_whatif_improvement: float, has_time_for_more_evidence: bool) -> dict:
-    """Returns a decision + human-readable reason. Never auto-executes anything."""
+    """Returns a decision + human-readable reason. Never auto-executes anything.
+
+    Updated to route ambiguous/tamper cases to agent_investigation first,
+    rather than directly to human_review. The Case Resolution Agent will
+    investigate and only escalate truly unresolvable cases.
+    """
     if any_tamper_flagged:
         return {
-            "decision": "human_review",
-            "reason": "Tamper indicator detected on submitted evidence — requires human judgment, not automated action.",
+            "decision": "agent_investigation",
+            "original_trigger": "tamper_detected",
+            "reason": "Tamper indicator detected on submitted evidence — AI Case Agent will investigate "
+                      "whether this is a false positive before escalating to human review.",
         }
 
     breakeven = _breakeven_win_prob(amount)
@@ -85,9 +92,10 @@ def decide(win_prob: float, amount: float, hours_remaining: float, any_tamper_fl
         }
 
     return {
-        "decision": "human_review",
+        "decision": "agent_investigation",
+        "original_trigger": "ambiguous_probability",
         "reason": f"Win probability {win_prob:.0%} sits within the ambiguity band around the "
-                  f"{breakeven:.1%} breakeven point — close enough that a human should decide.",
+                  f"{breakeven:.1%} breakeven point — AI Case Agent will investigate before escalating.",
     }
 
 

@@ -1,17 +1,16 @@
 """
-LLM Explanation Layer — Task 5 of Dispute Defense Copilot.
+LLM Explanation & Investigation Narrative Layer — Dispute Defense Copilot.
 
-Deliberately narrow role, per the architecture review: the LLM NEVER
-computes a probability, a decision, or a claim of its own. It only narrates
-numbers already produced by the Evidence Verifier, Contest Outcome
-Predictor, What-If Engine, and Decision Policy. This keeps "could the LLM
-hallucinate a probability" a non-issue by construction — it never has the
-option to.
+UPGRADED from a passive explainer to an active narrator of the Case Resolution
+Agent's investigation. Three modes:
 
-This module builds the PROMPT deterministically from computed values. Wire
-it to a real API call (Anthropic, etc.) in `call_llm()` — left as a stub
-since this environment has no network access. A template-only fallback is
-provided so the demo runs end-to-end without any API key.
+  1. Standard Explanation — narrates ML results for clear-cut cases
+  2. Investigation Narrative — narrates what the agent investigated and found
+  3. Human Brief — creates structured guidance for escalated cases
+
+The LLM NEVER computes a probability, a decision, or a claim of its own.
+It only narrates values already produced by the pipeline modules. This keeps
+hallucination risk at zero by construction.
 """
 
 import os
@@ -19,6 +18,8 @@ import os
 
 def build_explanation_prompt(dispute_summary: dict) -> str:
     """
+    Build the prompt for a standard case explanation.
+
     dispute_summary must contain only values already computed elsewhere:
     dispute_id, reason_code, amount, hours_remaining, evidence_status
     (list of {type, valid, confidence}), win_prob, decision, decision_reason,
@@ -59,6 +60,99 @@ Reason for recommendation: {dispute_summary['decision_reason']}
 
 Write the explanation now."""
     return prompt
+
+
+def build_investigation_narrative(investigation: dict) -> str:
+    """
+    Build a narrative of what the AI Case Agent investigated and found.
+
+    This is shown on the dashboard when a case was sent to the agent.
+    All facts come from the investigation report — no invented claims.
+    """
+    if not investigation:
+        return ""
+
+    status = investigation.get("status", "unknown")
+    steps = investigation.get("investigation_steps", [])
+    findings = investigation.get("findings_summary", [])
+    recommendation = investigation.get("final_recommendation", "")
+    reason = investigation.get("final_reason", "")
+
+    lines = []
+
+    # Header
+    if status == "resolved":
+        lines.append("🤖 **AI Case Agent — Investigation Complete (Resolved)**\n")
+    else:
+        lines.append("🤖 **AI Case Agent — Investigation Complete (Escalated to Human)**\n")
+
+    # Uncertainty analysis
+    uncertainty = investigation.get("uncertainty_analysis", {})
+    primary = uncertainty.get("primary_uncertainty", "")
+    if primary:
+        lines.append(f"**Primary uncertainty:** {primary.replace('_', ' ').title()}")
+
+    # Investigation steps
+    if steps:
+        lines.append("\n**Investigation steps performed:**")
+        for i, step in enumerate(steps, 1):
+            lines.append(f"  {i}. {step.get('description', 'Unknown step')}")
+            lines.append(f"     → {step.get('conclusion', '')}")
+
+    # Final findings
+    if findings:
+        lines.append("\n**Key findings:**")
+        for finding in findings:
+            lines.append(f"  • {finding}")
+
+    # Recommendation
+    if recommendation:
+        action_label = recommendation.replace("recommend_", "").replace("_", " ").title()
+        lines.append(f"\n**Recommendation:** {action_label}")
+        if reason:
+            lines.append(f"**Reasoning:** {reason}")
+
+    return "\n".join(lines)
+
+
+def build_human_brief_narrative(human_brief: dict) -> str:
+    """
+    Build a narrative for the human reviewer when the agent escalates.
+
+    Shows: what was already investigated, what the human should focus on,
+    and estimated time saved.
+    """
+    if not human_brief:
+        return ""
+
+    lines = []
+    lines.append("## 📋 AI Investigation Brief for Human Reviewer\n")
+    lines.append(f"**Summary:** {human_brief.get('summary', '')}\n")
+
+    # Already investigated
+    already = human_brief.get("already_investigated", [])
+    if already:
+        lines.append("### ✅ Already Investigated by AI")
+        for item in already:
+            lines.append(f"  • **{item.get('check', '')}**")
+            lines.append(f"    Result: {item.get('result', '')}")
+
+    # What the human should focus on
+    focus = human_brief.get("human_focus_areas", [])
+    if focus:
+        lines.append("\n### 🎯 Human Should Investigate")
+        for area in focus:
+            severity_label = "🔴" if area.get("severity", 0) > 0.7 else "🟡" if area.get("severity", 0) > 0.4 else "🟢"
+            lines.append(f"  {severity_label} **{area.get('area', '').replace('_', ' ').title()}**")
+            lines.append(f"    {area.get('description', '')}")
+            lines.append(f"    *Suggested action:* {area.get('suggested_action', '')}")
+
+    # Time saved
+    time_saved = human_brief.get("time_saved_estimate", "")
+    if time_saved:
+        lines.append(f"\n⏱️ *{time_saved}*")
+
+    return "\n".join(lines)
 
 
 def call_llm(prompt: str, use_api: bool = False) -> str:

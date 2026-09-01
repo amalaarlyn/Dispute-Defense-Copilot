@@ -43,7 +43,7 @@ def build_features(df: pd.DataFrame) -> pd.DataFrame:
     feats["address_sim"] = df.apply(
         lambda r: _char_similarity(str(r["extracted_address"]), str(r["true_address"])), axis=1
     )
-    feats["tamper_flag"] = df["tamper_flag_label"].astype(int)
+    feats["tamper_flag"] = df["tamper_flag_label"].astype(str).map({"True": 1, "False": 0, "1": 1, "0": 0}).fillna(0).astype(int)
     feats["evidence_type"] = df["evidence_type"]
     feats["reason_code"] = df["reason_code"]
     return feats

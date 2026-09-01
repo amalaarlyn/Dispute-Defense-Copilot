@@ -1,3 +1,18 @@
+"""
+Dispute Defense Copilot — Dashboard API Server.
+
+Flask application serving the dashboard UI and REST API endpoints.
+
+Endpoints:
+    GET  /                          — Dashboard UI
+    GET  /api/disputes              — List all disputes (summary)
+    GET  /api/disputes/<id>         — Full pipeline analysis for a dispute
+    POST /api/disputes/<id>/feedback — Submit human override feedback
+    GET  /api/agent-metrics         — Agent performance metrics
+    GET  /api/metrics               — Model evaluation metrics
+    GET  /api/audit-log             — Query the audit trail
+"""
+
 import os
 import sys
 import json
@@ -7,6 +22,8 @@ from flask import Flask, jsonify, request, render_template
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 from pipeline import analyze_dispute
+from human_feedback import record_feedback, get_feedback_stats, OVERRIDE_REASONS
+from metrics_tracker import get_session_metrics, get_historical_metrics
 from audit_logger import (
     get_logger,
     log_api_request,
@@ -51,7 +68,7 @@ def get_disputes_data():
             groups[did] = []
         groups[did].append(r)
         
-    # Take just the first 100 for the dashboard to keep it snappy
+    # Take first 100 for the dashboard
     sample_dids = list(groups.keys())[:100]
     return {did: groups[did] for did in sample_dids}
 
@@ -62,16 +79,20 @@ def index():
 @app.route("/api/disputes")
 def list_disputes():
     data = get_disputes_data()
-    # Return just the summary for the list view
     summaries = []
     for did, rows in data.items():
         first = rows[0]
+        has_tamper = any(
+            r.get("tamper_flag_label") in (True, "True", "true", 1, "1")
+            for r in rows
+        )
         summaries.append({
             "dispute_id": did,
             "reason_code": first.get("reason_code"),
             "amount": float(first.get("amount", 0)),
             "hours_remaining": float(first.get("hours_remaining_at_creation", 0)),
-            "evidence_count": len([r for r in rows if r.get("evidence_type")])
+            "evidence_count": len([r for r in rows if r.get("evidence_type")]),
+            "has_tamper": has_tamper,
         })
     return jsonify(summaries)
 
@@ -89,6 +110,63 @@ def get_dispute_analysis(dispute_id):
     analysis = analyze_dispute(rows, verifier_model, predictor_model)
     log_api_request("GET", f"/api/disputes/{dispute_id}", 200, dispute_id=dispute_id)
     return jsonify(analysis)
+
+@app.route("/api/disputes/<dispute_id>/feedback", methods=["POST"])
+def submit_feedback(dispute_id):
+    """Submit human override feedback for a dispute."""
+    body = request.get_json(force=True)
+    
+    if not body:
+        return jsonify({"error": "Request body required"}), 400
+    
+    ai_recommendation = body.get("ai_recommendation", "")
+    human_decision = body.get("human_decision", "")
+    reason = body.get("reason", "other")
+    notes = body.get("notes", "")
+    agent_investigated = body.get("agent_investigated", False)
+    
+    if not human_decision:
+        return jsonify({"error": "human_decision is required"}), 400
+    
+    entry = record_feedback(
+        dispute_id=dispute_id,
+        ai_recommendation=ai_recommendation,
+        human_decision=human_decision,
+        reason=reason,
+        notes=notes,
+        agent_investigated=agent_investigated,
+    )
+    
+    _logger.info("Feedback recorded for dispute %s: AI=%s → Human=%s (reason=%s)",
+                 dispute_id, ai_recommendation, human_decision, reason)
+    
+    return jsonify({"status": "recorded", "feedback": entry})
+
+@app.route("/api/agent-metrics")
+def get_agent_metrics():
+    """Get agent performance metrics (session + historical)."""
+    session = get_session_metrics().to_dict()
+    historical = get_historical_metrics()
+    feedback = get_feedback_stats()
+    
+    return jsonify({
+        "session": session,
+        "historical": historical,
+        "feedback": feedback,
+    })
+
+@app.route("/api/feedback-options")
+def get_feedback_options():
+    """Get available feedback reason categories."""
+    return jsonify({
+        "reasons": OVERRIDE_REASONS,
+        "decisions": [
+            "contest",
+            "accept",
+            "obtain_evidence",
+            "human_review",
+        ],
+    })
 
 @app.route("/api/metrics")
 def get_metrics():

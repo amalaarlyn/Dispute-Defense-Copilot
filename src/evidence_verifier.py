@@ -98,18 +98,28 @@ def verify_single_document(model, doc_row):
     """
     Run the trained verifier on a single document row.
     Returns dict with validity prediction, confidence, and field-level breakdown.
-    """
-    feats = extract_document_features(doc_row)
-    X = np.array([[
-        feats["order_id_match"],
-        feats["name_similarity"],
-        feats["date_match"],
-        feats["address_similarity"],
-        feats["is_relevant"],
-        feats["field_match_count"],
-    ]])
 
-    prob = model.predict_proba(X)[0]
+    The retrained verifier expects a 7-column DataFrame:
+    [evidence_type, reason_code, order_id_sim, name_sim, date_sim, address_sim, tamper_flag]
+    produced by data.evidence_features.build_features.
+    """
+    import pandas as pd
+
+    feats = extract_document_features(doc_row)
+
+    # Build a single-row DataFrame matching the training schema
+    row_df = pd.DataFrame([{
+        "evidence_type": doc_row.get("evidence_type", ""),
+        "reason_code": doc_row.get("reason_code", ""),
+        "order_id_sim": feats["order_id_match"],
+        "name_sim": feats["name_similarity"],
+        "date_sim": feats["date_match"],
+        "address_sim": feats["address_similarity"],
+        "tamper_flag": int(doc_row.get("tamper_flag_label") in (True, "True", "true", 1, "1")),
+    }])
+
+    cols = ["evidence_type", "reason_code", "order_id_sim", "name_sim", "date_sim", "address_sim", "tamper_flag"]
+    prob = model.predict_proba(row_df[cols])[0]
     predicted_valid = bool(prob[1] >= 0.5)
     confidence = float(max(prob))
 
@@ -153,3 +163,4 @@ def verify_single_document(model, doc_row):
         "field_match_count": int(feats["field_match_count"]),
         "features": feats,
     }
+
