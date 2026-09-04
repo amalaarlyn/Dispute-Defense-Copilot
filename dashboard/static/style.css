@@ -6,46 +6,35 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
+
 :root {
-  /* Core Palette */
-  --bg-deep: #06080f;
-  --bg-primary: #0a0e1a;
-  --bg-secondary: #0f1424;
-  --bg-tertiary: #141a2e;
-  --bg-card: rgba(15, 20, 40, 0.7);
-  --bg-card-hover: rgba(25, 32, 60, 0.8);
-  --bg-elevated: rgba(20, 26, 46, 0.9);
-
-  --border-subtle: rgba(255, 255, 255, 0.05);
+  /* Elegant Dark Palette */
+  --bg-deep: #030509;
+  --bg-primary: #050811;
+  --bg-secondary: #080c1a;
+  --bg-tertiary: #0b1124;
+  
+  --border-subtle: rgba(255, 255, 255, 0.03);
   --border-active: rgba(99, 102, 241, 0.3);
-  --border-glow: rgba(99, 102, 241, 0.4);
+  
+  --text-primary: #ffffff;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --text-dim: #334155;
 
-  --text-primary: #eef2ff;
-  --text-secondary: #a0aec0;
-  --text-muted: #5a6a80;
-  --text-dim: #3a4a5c;
-
-  /* Neon Accent Palette */
-  --neon-indigo: #818cf8;
-  --neon-violet: #a78bfa;
-  --neon-cyan: #22d3ee;
-  --neon-emerald: #34d399;
-  --neon-amber: #fbbf24;
-  --neon-rose: #fb7185;
-  --neon-blue: #60a5fa;
+  /* Refined Neon Accents (Cyan, Indigo, Purple) */
+  --neon-indigo: #6366f1;
+  --neon-violet: #8b5cf6;
+  --neon-cyan: #06b6d4;
+  --neon-emerald: #10b981;
+  --neon-amber: #f59e0b;
+  --neon-rose: #f43f5e;
+  --neon-blue: #3b82f6;
 
   /* Gradients */
-  --grad-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #c084fc 100%);
-  --grad-secondary: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
-  --grad-success: linear-gradient(135deg, #059669 0%, #34d399 100%);
-  --grad-danger: linear-gradient(135deg, #dc2626 0%, #fb7185 100%);
-  --grad-warning: linear-gradient(135deg, #d97706 0%, #fbbf24 100%);
-  --grad-cyan: linear-gradient(135deg, #0891b2 0%, #22d3ee 100%);
-  --grad-agent: linear-gradient(135deg, #7c3aed 0%, #c084fc 50%, #f0abfc 100%);
-  --grad-mesh: radial-gradient(at 20% 30%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
-               radial-gradient(at 80% 70%, rgba(139, 92, 246, 0.06) 0%, transparent 50%),
-               radial-gradient(at 50% 50%, rgba(34, 211, 238, 0.04) 0%, transparent 50%);
-
+  --grad-primary: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+  --grad-secondary: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
+  --grad-mesh: none; /* Removing the old mesh to rely on the new elegant orbs */
   /* Shadows */
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.4);
@@ -2619,64 +2608,65 @@ h1, h2, h3, h4, h5, h6, .page-title, .panel-title, .table-title, .brand-name, .c
   font-family: 'JetBrains Mono', monospace;
 }
 
+
 /* ==========================================================================
-   Background Glowing Orbs
+   Elegant Glowing Background
    ========================================================================== */
 .bg-orb {
   position: absolute;
-  border-radius: 50%;
-  filter: blur(120px);
   z-index: -1;
-  opacity: 0.4;
-  animation: orb-float 20s infinite alternate ease-in-out;
+  pointer-events: none;
 }
 
 .bg-orb-1 {
-  width: 800px;
-  height: 800px;
-  background: radial-gradient(circle, rgba(0,240,255,0.4) 0%, rgba(0,0,0,0) 70%);
+  width: 140vw;
+  height: 600px;
   top: -200px;
-  right: -100px;
+  left: -20vw;
+  background: radial-gradient(ellipse at 50% 50%, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.1) 40%, transparent 70%);
+  filter: blur(80px);
+  opacity: 0.8;
 }
 
 .bg-orb-2 {
-  width: 900px;
-  height: 900px;
-  background: radial-gradient(circle, rgba(255,94,0,0.3) 0%, rgba(0,0,0,0) 70%);
-  bottom: -300px;
-  left: -200px;
+  width: 800px;
+  height: 800px;
+  bottom: -400px;
+  right: -200px;
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.05) 0%, transparent 60%);
+  filter: blur(100px);
+  border-radius: 50%;
 }
 
 .bg-orb-3 {
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, rgba(77,124,255,0.3) 0%, rgba(0,0,0,0) 70%);
-  top: 40%;
-  left: 40%;
-}
-
-@keyframes orb-float {
-  0% { transform: translate(0, 0) scale(1); }
-  100% { transform: translate(50px, -50px) scale(1.1); }
+  display: none;
 }
 
 /* ==========================================================================
    Glassmorphism Utilities
    ========================================================================== */
+
 .glass-panel {
-  background: rgba(20, 25, 40, 0.4) !important;
-  backdrop-filter: blur(24px) !important;
-  -webkit-backdrop-filter: blur(24px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+  background: rgba(8, 12, 25, 0.7) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.04) !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5) !important;
+  border-radius: 16px !important;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
+}
+
+.glass-panel:hover {
+  border-color: rgba(99, 102, 241, 0.2) !important;
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.6), 0 0 20px rgba(99, 102, 241, 0.1) !important;
 }
 
 .glass-input {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: white;
-  padding: 8px 16px;
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 10px;
   font-family: 'Inter', sans-serif;
   font-size: 13px;
   transition: all 0.2s ease-out;
@@ -2684,6 +2674,8 @@ h1, h2, h3, h4, h5, h6, .page-title, .panel-title, .table-title, .brand-name, .c
 
 .glass-input:focus {
   outline: none;
-  border-color: #00f0ff;
-  box-shadow: 0 0 0 2px rgba(0, 240, 255, 0.2);
+  border-color: rgba(139, 92, 246, 0.5);
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+  background: rgba(255, 255, 255, 0.05);
 }
+
