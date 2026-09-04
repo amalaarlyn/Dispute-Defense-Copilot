@@ -1,14 +1,15 @@
 /**
- * Dispute Defense Copilot — Dashboard v2
+ * Dispute Defense Copilot — Dashboard v3 (Multi-Page SPA)
  * 
  * Features:
- * - Pipeline step animations (stage-by-stage activation)
- * - AI investigation findings with slide-in effects
- * - Human brief panel for escalated cases
+ * - Hash-based client-side router with 5 pages
+ * - Dashboard home with metrics overview & recent disputes
+ * - Disputes page with pipeline step animations
+ * - Analytics page with agent performance metrics
+ * - Audit Log page with searchable event trail
+ * - Settings page with configuration controls
  * - Human feedback modal with override capture
- * - Agent metrics live tracking in bottom ribbon
- * - Smooth animated gauge and counters
- * - Search with debounce
+ * - Smooth page transitions
  */
 
 (function () {
@@ -16,7 +17,202 @@
 
   const API = '';
 
-  // DOM
+  // =========================================================================
+  // Router
+  // =========================================================================
+
+  const PAGES = ['dashboard', 'disputes', 'analytics', 'audit', 'settings'];
+  let currentPage = null;
+  let pageInitialized = {};
+
+  function initRouter() {
+    window.addEventListener('hashchange', () => navigate(getPageFromHash()));
+    navigate(getPageFromHash());
+  }
+
+  function getPageFromHash() {
+    const hash = window.location.hash.replace('#/', '').split('/')[0];
+    return PAGES.includes(hash) ? hash : 'dashboard';
+  }
+
+  function navigate(page) {
+    if (page === currentPage) return;
+    const prevPage = currentPage;
+    currentPage = page;
+
+    // Update hash without triggering hashchange
+    if (window.location.hash !== `#/${page}`) {
+      history.replaceState(null, '', `#/${page}`);
+    }
+
+    // Update nav rail
+    document.querySelectorAll('.nav-rail-item').forEach(el => {
+      el.classList.toggle('active', el.dataset.page === page);
+    });
+
+    // Switch pages with animation
+    PAGES.forEach(p => {
+      const el = document.getElementById(`page-${p}`);
+      if (!el) return;
+      if (p === page) {
+        el.classList.remove('hidden');
+        el.classList.add('page-entering');
+        // Remove animation class after it completes
+        setTimeout(() => el.classList.remove('page-entering'), 350);
+      } else {
+        el.classList.add('hidden');
+        el.classList.remove('page-entering');
+      }
+    });
+
+    // Load page data if not initialized
+    loadPageData(page);
+  }
+
+  function loadPageData(page) {
+    switch (page) {
+      case 'dashboard':
+        loadDashboard();
+        break;
+      case 'disputes':
+        if (!pageInitialized.disputes) {
+          loadDisputes();
+          pageInitialized.disputes = true;
+        }
+        break;
+      case 'analytics':
+        loadAnalytics();
+        break;
+      case 'audit':
+        loadAuditLog();
+        break;
+      case 'settings':
+        initSettings();
+        break;
+    }
+  }
+
+  // =========================================================================
+  // Dashboard Page
+  // =========================================================================
+
+  async function loadDashboard() {
+    try {
+      // Fetch metrics and disputes in parallel
+      const [metricsRes, disputesRes, modelRes] = await Promise.allSettled([
+        fetch(`${API}/api/agent-metrics`),
+        fetch(`${API}/api/disputes`),
+        fetch(`${API}/api/metrics`),
+      ]);
+
+      // Agent Metrics
+      if (metricsRes.status === 'fulfilled' && metricsRes.value.ok) {
+        const data = await metricsRes.value.json();
+        const s = data.session || {};
+        
+        animateDashMetric('dm-total', s.total_disputes || 0, false);
+        animateDashMetric('dm-automation', s.total_disputes ? `${(s.automation_coverage * 100).toFixed(0)}%` : '—');
+        animateDashMetric('dm-human', s.total_disputes ? `${(s.human_review_rate * 100).toFixed(0)}%` : '—');
+        animateDashMetric('dm-agent', s.agent_investigated ? `${(s.agent_resolution_rate * 100).toFixed(0)}%` : '—');
+
+        // Also update bottom ribbon
+        updateMetrics(data);
+      }
+
+      // Recent Disputes
+      if (disputesRes.status === 'fulfilled' && disputesRes.value.ok) {
+        const disputes = await disputesRes.value.json();
+        renderRecentDisputes(disputes.slice(0, 8));
+      }
+
+      // Model Metrics
+      if (modelRes.status === 'fulfilled' && modelRes.value.ok) {
+        const modelData = await modelRes.value.json();
+        renderDashModelMetrics(modelData);
+      }
+    } catch (err) {
+      console.error('Dashboard load error:', err);
+    }
+  }
+
+  function animateDashMetric(id, value) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = value;
+  }
+
+  function renderRecentDisputes(disputes) {
+    const container = document.getElementById('dash-recent-list');
+    if (!container) return;
+
+    if (!disputes.length) {
+      container.innerHTML = '<div class="loading">No disputes found.</div>';
+      return;
+    }
+
+    container.innerHTML = disputes.map(d => {
+      const shortId = d.dispute_id.replace('disp_', '').substring(0, 10);
+      return `
+        <div class="dash-recent-item" data-id="${d.dispute_id}">
+          <div>
+            <span class="recent-id">disp_${shortId}…</span>
+          </div>
+          <div class="recent-meta">
+            <span class="recent-amount">₹${Number(d.amount).toLocaleString('en-IN', {maximumFractionDigits: 0})}</span>
+            <span class="recent-badge ${d.has_tamper ? 'tamper' : ''}">${d.has_tamper ? '⚠ Tamper' : fmtReason(d.reason_code)}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Click to navigate to dispute
+    container.querySelectorAll('.dash-recent-item').forEach(el => {
+      el.addEventListener('click', () => {
+        window.location.hash = '#/disputes';
+        setTimeout(() => selectDispute(el.dataset.id), 100);
+      });
+    });
+  }
+
+  function renderDashModelMetrics(data) {
+    const container = document.getElementById('dash-model-metrics');
+    if (!container) return;
+
+    // Extract key metrics
+    const metrics = [];
+    if (data.outcome_predictor) {
+      const op = data.outcome_predictor;
+      if (op.roc_auc !== undefined) metrics.push({ label: 'Outcome AUC', value: op.roc_auc.toFixed(3) });
+      if (op.accuracy !== undefined) metrics.push({ label: 'Outcome Accuracy', value: `${(op.accuracy * 100).toFixed(1)}%` });
+    }
+    if (data.evidence_verifier) {
+      const ev = data.evidence_verifier;
+      if (ev.roc_auc !== undefined) metrics.push({ label: 'Verifier AUC', value: ev.roc_auc.toFixed(3) });
+      if (ev.accuracy !== undefined) metrics.push({ label: 'Verifier Accuracy', value: `${(ev.accuracy * 100).toFixed(1)}%` });
+    }
+
+    if (!metrics.length) {
+      container.innerHTML = '<div style="font-size:12px;color:var(--text-dim);padding:8px 0;">No model metrics available.</div>';
+      return;
+    }
+
+    container.innerHTML = metrics.map(m => `
+      <div class="dash-model-metric-row">
+        <span class="dash-model-metric-label">${m.label}</span>
+        <span class="dash-model-metric-value">${m.value}</span>
+      </div>
+    `).join('');
+  }
+
+  // Refresh button
+  document.getElementById('btn-refresh-dashboard')?.addEventListener('click', () => {
+    loadDashboard();
+  });
+
+  // =========================================================================
+  // Disputes Page — List
+  // =========================================================================
+
   const disputeListEl = document.getElementById('dispute-list');
   const searchInput = document.getElementById('search-input');
   const analysisView = document.getElementById('analysis-view');
@@ -26,10 +222,6 @@
   let allDisputes = [];
   let activeId = null;
   let currentAnalysis = null;
-
-  // =========================================================================
-  // Disputes List
-  // =========================================================================
 
   async function loadDisputes() {
     try {
@@ -72,7 +264,7 @@
 
   // Search with debounce
   let searchTimeout;
-  searchInput.addEventListener('input', () => {
+  searchInput?.addEventListener('input', () => {
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(() => {
       const q = searchInput.value.toLowerCase().trim();
@@ -86,11 +278,21 @@
   });
 
   // =========================================================================
-  // Select & Analyze
+  // Disputes Page — Select & Analyze
   // =========================================================================
 
   async function selectDispute(disputeId) {
     activeId = disputeId;
+
+    // Ensure we are on disputes page
+    if (currentPage !== 'disputes') {
+      window.location.hash = '#/disputes';
+    }
+
+    // Ensure disputes are loaded
+    if (!allDisputes.length) {
+      await loadDisputes();
+    }
 
     disputeListEl.querySelectorAll('.dispute-item').forEach(el => {
       el.classList.toggle('active', el.dataset.id === disputeId);
@@ -110,7 +312,7 @@
       currentAnalysis = data;
       renderAnalysis(data);
       setAgentStatus('online');
-      updateMetrics();
+      updateMetricsFromApi();
     } catch (err) {
       analysisView.innerHTML = `<div class="loading" style="color: var(--neon-rose);">Analysis failed: ${err.message}</div>`;
       setAgentStatus('online');
@@ -542,24 +744,293 @@
   }
 
   // =========================================================================
-  // Metrics
+  // Analytics Page
   // =========================================================================
 
-  async function updateMetrics() {
+  async function loadAnalytics() {
+    const container = document.getElementById('analytics-content');
+    if (!container) return;
+
+    container.innerHTML = '<div class="loading">Loading analytics…</div>';
+
+    try {
+      const [metricsRes, modelRes] = await Promise.allSettled([
+        fetch(`${API}/api/agent-metrics`),
+        fetch(`${API}/api/metrics`),
+      ]);
+
+      let html = '';
+
+      // Agent Metrics
+      if (metricsRes.status === 'fulfilled' && metricsRes.value.ok) {
+        const data = await metricsRes.value.json();
+        const s = data.session || {};
+        const fb = data.feedback || {};
+
+        html += `
+          <div class="analytics-grid">
+            <div class="analytics-stat-card indigo">
+              <div class="analytics-stat-label">Total Disputes</div>
+              <div class="analytics-stat-value indigo">${s.total_disputes || 0}</div>
+              <div class="analytics-stat-sub">Processed by the system</div>
+            </div>
+            <div class="analytics-stat-card emerald">
+              <div class="analytics-stat-label">Automation Rate</div>
+              <div class="analytics-stat-value emerald">${s.total_disputes ? `${(s.automation_coverage * 100).toFixed(1)}%` : '—'}</div>
+              <div class="analytics-stat-sub">Disputes auto-resolved</div>
+            </div>
+            <div class="analytics-stat-card amber">
+              <div class="analytics-stat-label">Human Review Rate</div>
+              <div class="analytics-stat-value amber">${s.total_disputes ? `${(s.human_review_rate * 100).toFixed(1)}%` : '—'}</div>
+              <div class="analytics-stat-sub">Escalated to humans</div>
+            </div>
+            <div class="analytics-stat-card violet">
+              <div class="analytics-stat-label">Agent Investigated</div>
+              <div class="analytics-stat-value violet">${s.agent_investigated || 0}</div>
+              <div class="analytics-stat-sub">AI agent deep-dives</div>
+            </div>
+            <div class="analytics-stat-card cyan">
+              <div class="analytics-stat-label">Agent Resolution Rate</div>
+              <div class="analytics-stat-value cyan">${s.agent_investigated ? `${(s.agent_resolution_rate * 100).toFixed(1)}%` : '—'}</div>
+              <div class="analytics-stat-sub">Resolved without human</div>
+            </div>
+            <div class="analytics-stat-card rose">
+              <div class="analytics-stat-label">Review Reduction</div>
+              <div class="analytics-stat-value rose">${s.total_disputes && s.human_review_reduction > 0 ? `↓${(s.human_review_reduction * 100).toFixed(1)}%` : '—'}</div>
+              <div class="analytics-stat-sub">Less human workload</div>
+            </div>
+          </div>
+        `;
+
+        // Feedback breakdown
+        if (fb.total_overrides !== undefined) {
+          const reasons = fb.reason_distribution || {};
+          const maxCount = Math.max(...Object.values(reasons), 1);
+          const colors = ['indigo', 'emerald', 'amber', 'rose', 'cyan'];
+
+          html += `
+            <div class="card">
+              <div class="card-title"><span class="title-icon">📝</span> Human Override Feedback</div>
+              <div class="analytics-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 20px;">
+                <div>
+                  <div class="analytics-stat-label">Total Overrides</div>
+                  <div style="font-size:24px;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--neon-amber);">${fb.total_overrides || 0}</div>
+                </div>
+                <div>
+                  <div class="analytics-stat-label">Agreement Rate</div>
+                  <div style="font-size:24px;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--neon-emerald);">${fb.agreement_rate !== undefined ? `${(fb.agreement_rate * 100).toFixed(0)}%` : '—'}</div>
+                </div>
+                <div>
+                  <div class="analytics-stat-label">Override Rate</div>
+                  <div style="font-size:24px;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--neon-rose);">${fb.override_rate !== undefined ? `${(fb.override_rate * 100).toFixed(0)}%` : '—'}</div>
+                </div>
+              </div>
+              ${Object.keys(reasons).length ? `
+                <div class="analytics-section-title">Override Reasons</div>
+                <div class="feedback-bar-chart">
+                  ${Object.entries(reasons).map(([reason, count], idx) => `
+                    <div class="fb-bar-row">
+                      <span class="fb-bar-label">${fmtReason(reason)}</span>
+                      <div class="fb-bar-track">
+                        <div class="fb-bar-fill ${colors[idx % colors.length]}" style="width:${(count / maxCount * 100).toFixed(0)}%"></div>
+                      </div>
+                      <span class="fb-bar-count">${count}</span>
+                    </div>
+                  `).join('')}
+                </div>
+              ` : ''}
+            </div>
+          `;
+        }
+      }
+
+      // Model Performance
+      if (modelRes.status === 'fulfilled' && modelRes.value.ok) {
+        const modelData = await modelRes.value.json();
+        
+        const renderModelTable = (name, data) => {
+          if (!data || typeof data !== 'object') return '';
+          const rows = Object.entries(data).filter(([k, v]) => typeof v === 'number').map(([k, v]) => `
+            <tr>
+              <td>${fmtReason(k)}</td>
+              <td class="metric-val">${v < 1 ? v.toFixed(4) : v.toFixed(2)}</td>
+            </tr>
+          `).join('');
+
+          if (!rows) return '';
+
+          return `
+            <div class="card">
+              <div class="card-title"><span class="title-icon">🧠</span> ${name}</div>
+              <table class="model-perf-table">
+                <thead>
+                  <tr>
+                    <th>Metric</th>
+                    <th>Value</th>
+                  </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+              </table>
+            </div>
+          `;
+        };
+
+        const grid2Html = [];
+        if (modelData.outcome_predictor) grid2Html.push(renderModelTable('Outcome Predictor', modelData.outcome_predictor));
+        if (modelData.evidence_verifier) grid2Html.push(renderModelTable('Evidence Verifier', modelData.evidence_verifier));
+
+        if (grid2Html.length) {
+          html += `<div class="grid-2">${grid2Html.join('')}</div>`;
+        }
+      }
+
+      container.innerHTML = html || '<div class="loading">No analytics data available.</div>';
+    } catch (err) {
+      container.innerHTML = `<div class="loading" style="color:var(--neon-rose);">Failed to load analytics: ${err.message}</div>`;
+    }
+  }
+
+  // =========================================================================
+  // Audit Log Page
+  // =========================================================================
+
+  async function loadAuditLog() {
+    const container = document.getElementById('audit-content');
+    if (!container) return;
+
+    const disputeId = document.getElementById('audit-search')?.value.trim() || '';
+    const eventType = document.getElementById('audit-type-filter')?.value || '';
+
+    container.innerHTML = '<div class="loading">Loading audit log…</div>';
+
+    try {
+      let url = `${API}/api/audit-log?limit=200`;
+      if (disputeId) url += `&dispute_id=${encodeURIComponent(disputeId)}`;
+      if (eventType) url += `&event_type=${encodeURIComponent(eventType)}`;
+
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      
+      const entries = data.entries || [];
+      
+      if (!entries.length) {
+        container.innerHTML = `
+          <div class="card">
+            <div class="audit-empty">
+              <p>No audit entries found.</p>
+              <p style="font-size:12px;margin-top:8px;">Analyze some disputes to generate audit trail entries.</p>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="audit-count">${entries.length} entries found</div>
+        <div class="card" style="padding:0;overflow:hidden;">
+          <div class="audit-table-wrapper">
+            <table class="audit-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Event Type</th>
+                  <th>Dispute ID</th>
+                  <th>Details</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${entries.map(e => {
+                  const eventClass = ['api_request', 'model_loaded', 'feedback'].includes(e.event_type) ? e.event_type : 'default';
+                  const details = [];
+                  if (e.method) details.push(e.method);
+                  if (e.path) details.push(e.path);
+                  if (e.status_code) details.push(`HTTP ${e.status_code}`);
+                  if (e.model_name) details.push(`Model: ${e.model_name}`);
+                  if (e.message) details.push(e.message);
+                  
+                  return `
+                    <tr>
+                      <td class="audit-timestamp">${e.timestamp ? new Date(e.timestamp).toLocaleString() : '—'}</td>
+                      <td><span class="audit-event-type ${eventClass}">${fmtReason(e.event_type || 'unknown')}</span></td>
+                      <td class="audit-id">${e.dispute_id || '—'}</td>
+                      <td style="color:var(--text-muted);font-size:12px;">${details.join(' · ') || '—'}</td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    } catch (err) {
+      container.innerHTML = `<div class="loading" style="color:var(--neon-rose);">Failed to load audit log: ${err.message}</div>`;
+    }
+  }
+
+  // Audit filters
+  document.getElementById('btn-refresh-audit')?.addEventListener('click', loadAuditLog);
+  
+  let auditSearchTimeout;
+  document.getElementById('audit-search')?.addEventListener('input', () => {
+    clearTimeout(auditSearchTimeout);
+    auditSearchTimeout = setTimeout(loadAuditLog, 400);
+  });
+
+  document.getElementById('audit-type-filter')?.addEventListener('change', loadAuditLog);
+
+  // =========================================================================
+  // Settings Page
+  // =========================================================================
+
+  let settingsInitialized = false;
+
+  function initSettings() {
+    if (settingsInitialized) return;
+    settingsInitialized = true;
+
+    // Slider handlers
+    const uncertaintySlider = document.getElementById('setting-uncertainty');
+    const uncertaintyVal = document.getElementById('setting-uncertainty-val');
+    if (uncertaintySlider && uncertaintyVal) {
+      uncertaintySlider.addEventListener('input', () => {
+        uncertaintyVal.textContent = (uncertaintySlider.value / 100).toFixed(2);
+      });
+    }
+
+    const confidenceSlider = document.getElementById('setting-confidence');
+    const confidenceVal = document.getElementById('setting-confidence-val');
+    if (confidenceSlider && confidenceVal) {
+      confidenceSlider.addEventListener('input', () => {
+        confidenceVal.textContent = (confidenceSlider.value / 100).toFixed(2);
+      });
+    }
+  }
+
+  // =========================================================================
+  // Metrics (Bottom Ribbon)
+  // =========================================================================
+
+  function updateMetrics(data) {
+    if (!data) return;
+    const s = data.session || {};
+
+    document.getElementById('m-total').textContent = s.total_disputes || 0;
+    document.getElementById('m-automation').textContent = s.total_disputes
+      ? `${(s.automation_coverage * 100).toFixed(0)}%` : '—';
+    document.getElementById('m-human-rate').textContent = s.total_disputes
+      ? `${(s.human_review_rate * 100).toFixed(0)}%` : '—';
+    document.getElementById('m-agent-rate').textContent = s.agent_investigated
+      ? `${(s.agent_resolution_rate * 100).toFixed(0)}%` : '—';
+    document.getElementById('m-reduction').textContent = s.total_disputes && s.human_review_reduction > 0
+      ? `↓${(s.human_review_reduction * 100).toFixed(0)}%` : '—';
+  }
+
+  async function updateMetricsFromApi() {
     try {
       const res = await fetch(`${API}/api/agent-metrics`);
       const data = await res.json();
-      const s = data.session || {};
-
-      document.getElementById('m-total').textContent = s.total_disputes || 0;
-      document.getElementById('m-automation').textContent = s.total_disputes
-        ? `${(s.automation_coverage * 100).toFixed(0)}%` : '—';
-      document.getElementById('m-human-rate').textContent = s.total_disputes
-        ? `${(s.human_review_rate * 100).toFixed(0)}%` : '—';
-      document.getElementById('m-agent-rate').textContent = s.agent_investigated
-        ? `${(s.agent_resolution_rate * 100).toFixed(0)}%` : '—';
-      document.getElementById('m-reduction').textContent = s.total_disputes && s.human_review_reduction > 0
-        ? `↓${(s.human_review_reduction * 100).toFixed(0)}%` : '—';
+      updateMetrics(data);
     } catch (err) {
       // Silently fail
     }
@@ -573,15 +1044,15 @@
     feedbackModal.classList.remove('hidden');
   };
 
-  document.getElementById('feedback-cancel').addEventListener('click', () => {
+  document.getElementById('feedback-cancel')?.addEventListener('click', () => {
     feedbackModal.classList.add('hidden');
   });
 
-  feedbackModal.addEventListener('click', (e) => {
+  feedbackModal?.addEventListener('click', (e) => {
     if (e.target === feedbackModal) feedbackModal.classList.add('hidden');
   });
 
-  document.getElementById('feedback-submit').addEventListener('click', async () => {
+  document.getElementById('feedback-submit')?.addEventListener('click', async () => {
     if (!currentAnalysis || !activeId) return;
 
     const body = {
@@ -624,6 +1095,6 @@
   // Init
   // =========================================================================
 
-  loadDisputes();
-  updateMetrics();
+  initRouter();
+  updateMetricsFromApi();
 })();
