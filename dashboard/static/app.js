@@ -812,8 +812,8 @@
             Assumed validity of new document: ${(best.assumed_validity_rate_of_new_doc * 100).toFixed(0)}%.
           </div>
           <div class="nba-actions">
-            <button class="btn-action">📎 Find Evidence</button>
-            <button class="btn-action">📧 Generate Request</button>
+            <button class="btn-action" onclick="alert('Simulated Action: Fetching ' + '${evidenceType}' + ' from internal databases...')">📎 Find Evidence</button>
+            <button class="btn-action" onclick="alert('Simulated Action: Drafting automated evidence request email to merchant for ' + '${evidenceType}' + '...')">📧 Generate Request</button>
           </div>
         </div>
         ${otherItems ? `
@@ -970,35 +970,78 @@
 
         html += `
           <div class="analytics-grid">
-            <div class="analytics-stat-card indigo">
-              <div class="analytics-stat-label">Total Disputes</div>
-              <div class="analytics-stat-value indigo">${s.total_disputes || 0}</div>
-              <div class="analytics-stat-sub">Processed by EVIDRA</div>
+            <div class="analytics-stat-card">
+              <div class="stat-content">
+                  <div class="analytics-stat-label">Total Disputes</div>
+                  <div class="analytics-stat-value indigo">${s.total_disputes || 0}</div>
+                  <div class="analytics-stat-sub">Processed by EVIDRA</div>
+              </div>
+              <div class="stat-chart-placeholder"></div>
             </div>
-            <div class="analytics-stat-card emerald">
-              <div class="analytics-stat-label">Automation Rate</div>
-              <div class="analytics-stat-value emerald">${s.total_disputes ? `${(s.automation_coverage * 100).toFixed(1)}%` : '—'}</div>
-              <div class="analytics-stat-sub">Disputes auto-resolved</div>
+            
+            <div class="analytics-stat-card">
+              <div class="stat-content">
+                  <div class="analytics-stat-label">Automation Rate</div>
+                  <div class="analytics-stat-value emerald">${s.total_disputes ? `${(s.automation_coverage * 100).toFixed(1)}%` : '—'}</div>
+                  <div class="analytics-stat-sub">Disputes auto-resolved</div>
+              </div>
+              <div class="stat-ring">
+                  <svg viewBox="0 0 100 100" class="ring-svg">
+                      <circle cx="50" cy="50" r="40" class="ring-bg"></circle>
+                      <circle cx="50" cy="50" r="40" class="ring-fg emerald" stroke-dasharray="251.2" stroke-dashoffset="${251.2 * (1 - (s.automation_coverage || 0))}"></circle>
+                  </svg>
+              </div>
             </div>
-            <div class="analytics-stat-card amber">
-              <div class="analytics-stat-label">Human Review Rate</div>
-              <div class="analytics-stat-value amber">${s.total_disputes ? `${(s.human_review_rate * 100).toFixed(1)}%` : '—'}</div>
-              <div class="analytics-stat-sub">Escalated to humans</div>
+
+            <div class="analytics-stat-card">
+              <div class="stat-content">
+                  <div class="analytics-stat-label">Human Review Rate</div>
+                  <div class="analytics-stat-value amber">${s.total_disputes ? `${(s.human_review_rate * 100).toFixed(1)}%` : '—'}</div>
+                  <div class="analytics-stat-sub">Escalated to humans</div>
+              </div>
+              <div class="stat-ring">
+                  <svg viewBox="0 0 100 100" class="ring-svg">
+                      <circle cx="50" cy="50" r="40" class="ring-bg"></circle>
+                      <circle cx="50" cy="50" r="40" class="ring-fg amber" stroke-dasharray="251.2" stroke-dashoffset="${251.2 * (1 - (s.human_review_rate || 0))}"></circle>
+                  </svg>
+              </div>
             </div>
-            <div class="analytics-stat-card violet">
-              <div class="analytics-stat-label">AI Investigated</div>
-              <div class="analytics-stat-value violet">${s.agent_investigated || 0}</div>
-              <div class="analytics-stat-sub">Uncertainty investigations</div>
+
+            <div class="analytics-stat-card">
+              <div class="stat-content">
+                  <div class="analytics-stat-label">AI Investigated</div>
+                  <div class="analytics-stat-value violet">${s.agent_investigated || 0}</div>
+                  <div class="analytics-stat-sub">Uncertainty investigations</div>
+              </div>
+              <div class="stat-chart-placeholder"></div>
             </div>
-            <div class="analytics-stat-card cyan">
-              <div class="analytics-stat-label">AI Resolution Rate</div>
-              <div class="analytics-stat-value cyan">${s.agent_investigated ? `${(s.agent_resolution_rate * 100).toFixed(1)}%` : '—'}</div>
-              <div class="analytics-stat-sub">Resolved without human</div>
+
+            <div class="analytics-stat-card">
+              <div class="stat-content">
+                  <div class="analytics-stat-label">AI Resolution Rate</div>
+                  <div class="analytics-stat-value emerald">${s.total_disputes ? `${((s.agent_resolved / (s.agent_investigated || 1)) * 100).toFixed(1)}%` : '—'}</div>
+                  <div class="analytics-stat-sub">Resolved without human</div>
+              </div>
+              <div class="stat-ring">
+                  <svg viewBox="0 0 100 100" class="ring-svg">
+                      <circle cx="50" cy="50" r="40" class="ring-bg"></circle>
+                      <circle cx="50" cy="50" r="40" class="ring-fg emerald" stroke-dasharray="251.2" stroke-dashoffset="${251.2 * (1 - ((s.agent_resolved || 0) / (s.agent_investigated || 1)))}"></circle>
+                  </svg>
+              </div>
             </div>
-            <div class="analytics-stat-card rose">
-              <div class="analytics-stat-label">Review Reduction</div>
-              <div class="analytics-stat-value rose">${s.total_disputes && s.human_review_reduction > 0 ? `↓${(s.human_review_reduction * 100).toFixed(1)}%` : '—'}</div>
-              <div class="analytics-stat-sub">Less human workload</div>
+
+            <div class="analytics-stat-card">
+              <div class="stat-content">
+                  <div class="analytics-stat-label">Review Reduction</div>
+                  <div class="analytics-stat-value rose">↓${s.human_review_reduction > 0 ? `${(s.human_review_reduction * 100).toFixed(1)}%` : '0%'}</div>
+                  <div class="analytics-stat-sub">Less human workload</div>
+              </div>
+              <div class="stat-ring">
+                  <svg viewBox="0 0 100 100" class="ring-svg">
+                      <circle cx="50" cy="50" r="40" class="ring-bg"></circle>
+                      <circle cx="50" cy="50" r="40" class="ring-fg rose" stroke-dasharray="251.2" stroke-dashoffset="${251.2 * (1 - (s.human_review_reduction || 0))}"></circle>
+                  </svg>
+              </div>
             </div>
           </div>
         `;
