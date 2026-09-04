@@ -1,6 +1,6 @@
 /* ==========================================================================
-   Dispute Defense Copilot — Premium Dashboard Styles v3
-   Multi-page SPA with nav rail, page transitions, glassmorphism,
+   EVIDRA — AI Evidence Intelligence Dashboard
+   Premium fintech UI with nav rail, page transitions, glassmorphism,
    neon accents, pipeline animations, AI investigation panels
    ========================================================================== */
 
@@ -2133,4 +2133,476 @@ html, body {
   .nav-rail-label { display: none; }
   .dash-metrics { grid-template-columns: 1fr; }
   .analytics-grid { grid-template-columns: 1fr; }
+}
+
+/* ==========================================================================
+   AI Automation Impact Card (Dashboard)
+   ========================================================================== */
+
+.automation-impact-card {
+  border-color: rgba(52, 211, 153, 0.15);
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.automation-impact-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--grad-success);
+}
+
+.automation-impact-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.impact-stat {
+  text-align: center;
+  padding: 16px 8px;
+  border-radius: var(--r-md);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-subtle);
+}
+
+.impact-stat-value {
+  font-size: 32px;
+  font-weight: 800;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+}
+
+.impact-stat-value.emerald { color: var(--neon-emerald); }
+.impact-stat-value.indigo { color: var(--neon-indigo); }
+.impact-stat-value.amber { color: var(--neon-amber); }
+.impact-stat-value.cyan { color: var(--neon-cyan); }
+
+.impact-stat-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 500;
+}
+
+.impact-highlight {
+  grid-column: span 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border-radius: var(--r-md);
+  background: rgba(52, 211, 153, 0.05);
+  border: 1px solid rgba(52, 211, 153, 0.12);
+}
+
+.impact-highlight-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.impact-highlight-value {
+  font-size: 18px;
+  font-weight: 800;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--neon-emerald);
+}
+
+/* ==========================================================================
+   AI Case Brief Card
+   ========================================================================== */
+
+.case-brief-card {
+  border-color: rgba(99, 102, 241, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.case-brief-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--grad-primary);
+}
+
+.case-brief-text {
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--text-secondary);
+  padding: 4px 0;
+}
+
+/* ==========================================================================
+   Next Best Action Card
+   ========================================================================== */
+
+.next-best-action-card {
+  border-color: rgba(34, 211, 238, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.next-best-action-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--grad-cyan);
+}
+
+.nba-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.nba-action-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.nba-probability-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.nba-prob-box {
+  flex: 1;
+  padding: 14px;
+  border-radius: var(--r-md);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-subtle);
+  text-align: center;
+}
+
+.nba-prob-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.nba-prob-value {
+  font-size: 28px;
+  font-weight: 800;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.nba-prob-value.current { color: var(--neon-amber); }
+.nba-prob-value.projected { color: var(--neon-emerald); }
+
+.nba-arrow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  color: var(--neon-emerald);
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.nba-arrow-icon {
+  font-size: 20px;
+}
+
+.nba-delta {
+  font-size: 14px;
+}
+
+.nba-reason {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  padding: 12px 16px;
+  border-radius: var(--r-sm);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-subtle);
+}
+
+.nba-reason strong {
+  color: var(--neon-cyan);
+}
+
+.nba-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-action {
+  background: rgba(34, 211, 238, 0.08);
+  color: var(--neon-cyan);
+  border: 1px solid rgba(34, 211, 238, 0.2);
+  padding: 8px 18px;
+  border-radius: var(--r-sm);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--t-normal);
+  font-family: inherit;
+}
+
+.btn-action:hover {
+  background: rgba(34, 211, 238, 0.15);
+  border-color: rgba(34, 211, 238, 0.35);
+}
+
+/* ==========================================================================
+   Decision Timeline
+   ========================================================================== */
+
+.timeline-card {
+  border-color: rgba(99, 102, 241, 0.1);
+}
+
+.decision-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding-left: 8px;
+}
+
+.timeline-item {
+  display: flex;
+  gap: 14px;
+  position: relative;
+  padding-bottom: 16px;
+}
+
+.timeline-item:last-child {
+  padding-bottom: 0;
+}
+
+.timeline-line {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 20px;
+  flex-shrink: 0;
+}
+
+.timeline-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--neon-indigo);
+  box-shadow: 0 0 8px rgba(99, 102, 241, 0.4);
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+.timeline-connector {
+  width: 2px;
+  flex: 1;
+  background: rgba(99, 102, 241, 0.15);
+  margin-top: 4px;
+}
+
+.timeline-item:last-child .timeline-connector {
+  display: none;
+}
+
+.timeline-content {
+  flex: 1;
+  padding-top: 0;
+}
+
+.timeline-event {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.timeline-detail {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.timeline-time {
+  font-size: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+/* Staggered animation for timeline items */
+.timeline-item {
+  opacity: 0;
+  transform: translateX(-10px);
+  animation: slideIn 0.4s var(--t-smooth) forwards;
+}
+
+.timeline-item:nth-child(1) { animation-delay: 0.05s; }
+.timeline-item:nth-child(2) { animation-delay: 0.15s; }
+.timeline-item:nth-child(3) { animation-delay: 0.25s; }
+.timeline-item:nth-child(4) { animation-delay: 0.35s; }
+.timeline-item:nth-child(5) { animation-delay: 0.45s; }
+.timeline-item:nth-child(6) { animation-delay: 0.55s; }
+.timeline-item:nth-child(7) { animation-delay: 0.65s; }
+.timeline-item:nth-child(8) { animation-delay: 0.75s; }
+.timeline-item:nth-child(9) { animation-delay: 0.85s; }
+
+/* ==========================================================================
+   Why This Decision Card
+   ========================================================================== */
+
+.why-decision-card {
+  border-color: rgba(99, 102, 241, 0.1);
+}
+
+.why-decision-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.why-metric {
+  padding: 12px;
+  border-radius: var(--r-sm);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-subtle);
+  text-align: center;
+}
+
+.why-metric-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.why-metric-value {
+  font-size: 16px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-primary);
+}
+
+.why-conclusion {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  padding: 12px 16px;
+  border-radius: var(--r-sm);
+  background: rgba(99, 102, 241, 0.03);
+  border: 1px solid rgba(99, 102, 241, 0.08);
+}
+
+/* ==========================================================================
+   Uncertainty Explanation Card
+   ========================================================================== */
+
+.uncertainty-card {
+  border-color: rgba(167, 139, 250, 0.12);
+  position: relative;
+  overflow: hidden;
+}
+
+.uncertainty-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--grad-agent);
+}
+
+.confidence-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.confidence-badge.high {
+  background: rgba(52, 211, 153, 0.1);
+  color: var(--neon-emerald);
+}
+
+.confidence-badge.medium {
+  background: rgba(251, 191, 36, 0.1);
+  color: var(--neon-amber);
+}
+
+.confidence-badge.low {
+  background: rgba(251, 113, 133, 0.1);
+  color: var(--neon-rose);
+}
+
+.uncertainty-section {
+  margin-bottom: 12px;
+}
+
+.uncertainty-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.uncertainty-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.uncertainty-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.uncertainty-recommendation {
+  font-size: 13px;
+  color: var(--neon-cyan);
+  font-weight: 500;
+  padding: 10px 14px;
+  border-radius: var(--r-sm);
+  background: rgba(34, 211, 238, 0.04);
+  border: 1px solid rgba(34, 211, 238, 0.1);
+  margin-top: 8px;
+}
+
+@media (max-width: 1200px) {
+  .automation-impact-grid { grid-template-columns: repeat(2, 1fr); }
+  .impact-highlight { grid-column: span 2; }
+  .why-decision-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .automation-impact-grid { grid-template-columns: 1fr; }
+  .impact-highlight { grid-column: span 1; }
+  .why-decision-grid { grid-template-columns: 1fr; }
+  .nba-probability-row { flex-direction: column; }
 }

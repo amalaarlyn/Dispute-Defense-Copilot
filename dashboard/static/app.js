@@ -1,15 +1,16 @@
 /**
- * Dispute Defense Copilot — Dashboard v3 (Multi-Page SPA)
+ * EVIDRA — AI Evidence Intelligence Dashboard
  * 
  * Features:
  * - Hash-based client-side router with 5 pages
- * - Dashboard home with metrics overview & recent disputes
- * - Disputes page with pipeline step animations
+ * - Dashboard home with AI Automation Impact metrics
+ * - Disputes page with Case Brief, Next Best Action, Decision Timeline,
+ *   Why This Decision, Uncertainty Explanation, AI Investigation
  * - Analytics page with agent performance metrics
  * - Audit Log page with searchable event trail
  * - Settings page with configuration controls
  * - Human feedback modal with override capture
- * - Smooth page transitions
+ * - Business language throughout (no ML jargon)
  */
 
 (function () {
@@ -40,24 +41,20 @@
     const prevPage = currentPage;
     currentPage = page;
 
-    // Update hash without triggering hashchange
     if (window.location.hash !== `#/${page}`) {
       history.replaceState(null, '', `#/${page}`);
     }
 
-    // Update nav rail
     document.querySelectorAll('.nav-rail-item').forEach(el => {
       el.classList.toggle('active', el.dataset.page === page);
     });
 
-    // Switch pages with animation
     PAGES.forEach(p => {
       const el = document.getElementById(`page-${p}`);
       if (!el) return;
       if (p === page) {
         el.classList.remove('hidden');
         el.classList.add('page-entering');
-        // Remove animation class after it completes
         setTimeout(() => el.classList.remove('page-entering'), 350);
       } else {
         el.classList.add('hidden');
@@ -65,7 +62,6 @@
       }
     });
 
-    // Load page data if not initialized
     loadPageData(page);
   }
 
@@ -98,11 +94,11 @@
 
   async function loadDashboard() {
     try {
-      // Fetch metrics and disputes in parallel
-      const [metricsRes, disputesRes, modelRes] = await Promise.allSettled([
+      const [metricsRes, disputesRes, modelRes, impactRes] = await Promise.allSettled([
         fetch(`${API}/api/agent-metrics`),
         fetch(`${API}/api/disputes`),
         fetch(`${API}/api/metrics`),
+        fetch(`${API}/api/automation-impact`),
       ]);
 
       // Agent Metrics
@@ -113,10 +109,15 @@
         animateDashMetric('dm-total', s.total_disputes || 0, false);
         animateDashMetric('dm-automation', s.total_disputes ? `${(s.automation_coverage * 100).toFixed(0)}%` : '—');
         animateDashMetric('dm-human', s.total_disputes ? `${(s.human_review_rate * 100).toFixed(0)}%` : '—');
-        animateDashMetric('dm-agent', s.agent_investigated ? `${(s.agent_resolution_rate * 100).toFixed(0)}%` : '—');
+        animateDashMetric('dm-reduction', s.total_disputes && s.human_review_reduction > 0 ? `↓${(s.human_review_reduction * 100).toFixed(0)}%` : '—');
 
-        // Also update bottom ribbon
         updateMetrics(data);
+      }
+
+      // Automation Impact Card
+      if (impactRes.status === 'fulfilled' && impactRes.value.ok) {
+        const impact = await impactRes.value.json();
+        renderAutomationImpact(impact);
       }
 
       // Recent Disputes
@@ -139,6 +140,46 @@
     const el = document.getElementById(id);
     if (!el) return;
     el.textContent = value;
+  }
+
+  function renderAutomationImpact(impact) {
+    const container = document.getElementById('automation-impact-content');
+    if (!container) return;
+
+    if (!impact.disputes_analyzed) {
+      container.innerHTML = `
+        <div style="grid-column:span 4; text-align:center; padding:20px; color:var(--text-dim); font-size:13px;">
+          Analyze disputes to see AI automation impact metrics.
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="impact-stat">
+        <div class="impact-stat-value indigo">${impact.disputes_analyzed}</div>
+        <div class="impact-stat-label">Disputes Analyzed</div>
+      </div>
+      <div class="impact-stat">
+        <div class="impact-stat-value emerald">${impact.ai_resolved_automatically}</div>
+        <div class="impact-stat-label">AI Resolved</div>
+      </div>
+      <div class="impact-stat">
+        <div class="impact-stat-value amber">${impact.human_reviews_required}</div>
+        <div class="impact-stat-label">Human Reviews</div>
+      </div>
+      <div class="impact-stat">
+        <div class="impact-stat-value cyan">${impact.human_review_reduction > 0 ? `↓${impact.human_review_reduction}%` : '—'}</div>
+        <div class="impact-stat-label">Review Reduction</div>
+      </div>
+      ${impact.human_review_reduction > 0 ? `
+        <div class="impact-highlight">
+          <span class="impact-highlight-text">Human review reduced by</span>
+          <span class="impact-highlight-value">${impact.human_review_reduction}%</span>
+          <span class="impact-highlight-text">compared to baseline</span>
+        </div>
+      ` : ''}
+    `;
   }
 
   function renderRecentDisputes(disputes) {
@@ -165,7 +206,6 @@
       `;
     }).join('');
 
-    // Click to navigate to dispute
     container.querySelectorAll('.dash-recent-item').forEach(el => {
       el.addEventListener('click', () => {
         window.location.hash = '#/disputes';
@@ -178,12 +218,11 @@
     const container = document.getElementById('dash-model-metrics');
     if (!container) return;
 
-    // Extract key metrics
     const metrics = [];
     if (data.outcome_predictor) {
       const op = data.outcome_predictor;
-      if (op.roc_auc !== undefined) metrics.push({ label: 'Outcome AUC', value: op.roc_auc.toFixed(3) });
-      if (op.accuracy !== undefined) metrics.push({ label: 'Outcome Accuracy', value: `${(op.accuracy * 100).toFixed(1)}%` });
+      if (op.roc_auc !== undefined) metrics.push({ label: 'Predictor AUC', value: op.roc_auc.toFixed(3) });
+      if (op.accuracy !== undefined) metrics.push({ label: 'Predictor Accuracy', value: `${(op.accuracy * 100).toFixed(1)}%` });
     }
     if (data.evidence_verifier) {
       const ev = data.evidence_verifier;
@@ -204,7 +243,6 @@
     `).join('');
   }
 
-  // Refresh button
   document.getElementById('btn-refresh-dashboard')?.addEventListener('click', () => {
     loadDashboard();
   });
@@ -262,7 +300,6 @@
     return code.replace(/_/g, ' ').split(' ').map(w => w[0]?.toUpperCase() + w.slice(1)).join(' ');
   }
 
-  // Search with debounce
   let searchTimeout;
   searchInput?.addEventListener('input', () => {
     clearTimeout(searchTimeout);
@@ -284,12 +321,10 @@
   async function selectDispute(disputeId) {
     activeId = disputeId;
 
-    // Ensure we are on disputes page
     if (currentPage !== 'disputes') {
       window.location.hash = '#/disputes';
     }
 
-    // Ensure disputes are loaded
     if (!allDisputes.length) {
       await loadDisputes();
     }
@@ -302,7 +337,6 @@
     analysisView.classList.remove('hidden');
     analysisView.innerHTML = renderSkeleton();
 
-    // Update agent status
     setAgentStatus('investigating');
 
     try {
@@ -324,10 +358,10 @@
     const text = document.getElementById('agent-status-text');
     if (status === 'investigating') {
       dot.className = 'status-dot investigating';
-      text.textContent = 'Agent Investigating…';
+      text.textContent = 'Investigating…';
     } else {
       dot.className = 'status-dot online';
-      text.textContent = 'Agent Online';
+      text.textContent = 'System Online';
     }
   }
 
@@ -353,7 +387,6 @@
     const agentResolved = investigation?.status === 'resolved';
     const humanBrief = data.decision?.human_brief || investigation?.human_brief;
 
-    // Calculate amount from features
     const amountLog = data.features?.amount_log || 0;
     const amount = Math.expm1(amountLog);
     const hoursRemaining = data.features?.hours_remaining || 0;
@@ -364,21 +397,22 @@
       <div class="grid-2">
         <div>
           ${renderRecommendation(data, decision, hasAgent, agentResolved)}
+          ${renderCaseBrief(data.case_brief)}
           ${renderGauge(data.win_probability)}
+          ${renderWhyDecision(data.why_decision)}
           ${hasAgent ? renderInvestigation(investigation) : ''}
           ${humanBrief ? renderHumanBrief(humanBrief) : ''}
+          ${renderUncertaintyExplanation(data.uncertainty_explanation)}
         </div>
         <div>
+          ${renderNextBestAction(data.whatif_results, data.win_probability)}
           ${renderEvidence(data.verifier_results)}
-          ${renderWhatIf(data.whatif_results)}
+          ${renderDecisionTimeline(data.decision_timeline)}
         </div>
       </div>
     `;
 
-    // Animate gauge
     requestAnimationFrame(() => animateGauge(data.win_probability));
-
-    // Animate pipeline steps
     animatePipeline(data.pipeline_stages || []);
   }
 
@@ -389,6 +423,8 @@
   function renderHero(data, amount, hoursRemaining) {
     const validCount = (data.verifier_results || []).filter(r => r.predicted_valid).length;
     const totalCount = (data.verifier_results || []).length;
+    const missing = data.whatif_results?.missing_evidence_ranked || [];
+    const requiredTotal = totalCount + missing.length;
 
     return `
       <div class="hero-card">
@@ -406,12 +442,12 @@
             <span class="hero-stat-value time">${hoursRemaining.toFixed(0)}h</span>
           </div>
           <div class="hero-stat">
-            <span class="hero-stat-label">Win Probability</span>
+            <span class="hero-stat-label">Contest Likelihood</span>
             <span class="hero-stat-value probability">${(data.win_probability * 100).toFixed(1)}%</span>
           </div>
           <div class="hero-stat">
             <span class="hero-stat-label">Evidence</span>
-            <span class="hero-stat-value evidence">${validCount}/${totalCount} valid</span>
+            <span class="hero-stat-value evidence">${totalCount}/${requiredTotal} submitted</span>
           </div>
         </div>
       </div>
@@ -443,7 +479,7 @@
 
     return `
       <div class="pipeline-card">
-        <div class="pipeline-label">Pipeline Execution</div>
+        <div class="pipeline-label">EVIDRA Pipeline</div>
         <div class="pipeline-steps">${stepsHtml}</div>
       </div>
     `;
@@ -467,28 +503,43 @@
 
   function renderRecommendation(data, decision, hasAgent, agentResolved) {
     const labels = {
-      'recommend_contest': '✅ Contest Dispute',
-      'recommend_accept': '❌ Accept Chargeback',
-      'human_review': '👤 Human Review Required',
-      'recommend_obtain_evidence': '📋 Gather More Evidence',
-      'agent_investigation': '🤖 Agent Investigating',
+      'recommend_contest': '✅ RECOMMEND: CONTEST',
+      'recommend_accept': '❌ RECOMMEND: ACCEPT',
+      'human_review': '👤 HUMAN REVIEW REQUIRED',
+      'recommend_obtain_evidence': '📋 GATHER MORE EVIDENCE',
+      'agent_investigation': '🤖 AI INVESTIGATING',
     };
 
     const agentTag = hasAgent
       ? agentResolved
-        ? '<span class="agent-badge">🤖 Resolved by AI Agent</span>'
-        : '<span class="agent-badge">🤖 Investigated by AI Agent</span>'
+        ? '<span class="agent-badge">🤖 Resolved by EVIDRA</span>'
+        : '<span class="agent-badge">🤖 Investigated by EVIDRA</span>'
       : '';
 
-    const overrideBtn = `<button class="btn btn-override" onclick="window._openFeedback()">✏️ Override Decision</button>`;
+    const overrideBtn = `<button class="btn btn-override" onclick="window._openFeedback()">✏️ Override</button>`;
 
     return `
       <div class="card recommendation-card ${decision}">
         <div class="card-title"><span class="title-icon">⚖️</span> Recommendation</div>
         <div class="action-badge ${decision}">${labels[decision] || decision}</div>
-        <p class="narrative">${data.narrative || data.decision?.reason || ''}</p>
+        <p class="narrative">${data.decision?.reason || data.narrative || ''}</p>
         ${agentTag}
         <div style="margin-top:14px;">${overrideBtn}</div>
+      </div>
+    `;
+  }
+
+  // =========================================================================
+  // AI Case Brief
+  // =========================================================================
+
+  function renderCaseBrief(brief) {
+    if (!brief) return '';
+
+    return `
+      <div class="card case-brief-card">
+        <div class="card-title"><span class="title-icon">📝</span> AI Case Brief</div>
+        <div class="case-brief-text">${brief}</div>
       </div>
     `;
   }
@@ -500,7 +551,7 @@
   function renderGauge(winProb) {
     return `
       <div class="card" style="text-align:center;">
-        <div class="card-title" style="justify-content:center;"><span class="title-icon">📊</span> Win Probability</div>
+        <div class="card-title" style="justify-content:center;"><span class="title-icon">📊</span> Contest Likelihood</div>
         <div class="gauge-container">
           <svg viewBox="0 0 100 55" class="gauge">
             <defs>
@@ -549,6 +600,47 @@
   }
 
   // =========================================================================
+  // Why This Decision
+  // =========================================================================
+
+  function renderWhyDecision(why) {
+    if (!why) return '';
+
+    return `
+      <div class="card why-decision-card">
+        <div class="card-title"><span class="title-icon">❓</span> Why This Decision?</div>
+        <div class="why-decision-grid">
+          <div class="why-metric">
+            <div class="why-metric-label">Evidence Strength</div>
+            <div class="why-metric-value">${why.evidence_strength || '—'}</div>
+          </div>
+          <div class="why-metric">
+            <div class="why-metric-label">Completeness</div>
+            <div class="why-metric-value">${why.evidence_completeness || '—'}</div>
+          </div>
+          <div class="why-metric">
+            <div class="why-metric-label">Contest Probability</div>
+            <div class="why-metric-value">${why.contest_probability || '—'}</div>
+          </div>
+          <div class="why-metric">
+            <div class="why-metric-label">Loss if Contest</div>
+            <div class="why-metric-value" style="color:var(--neon-rose);">${why.expected_loss_contest || '—'}</div>
+          </div>
+          <div class="why-metric">
+            <div class="why-metric-label">Loss if Accept</div>
+            <div class="why-metric-value" style="color:var(--neon-amber);">${why.expected_loss_accept || '—'}</div>
+          </div>
+          <div class="why-metric">
+            <div class="why-metric-label">Time Remaining</div>
+            <div class="why-metric-value" style="color:var(--neon-cyan);">${why.time_remaining || '—'}</div>
+          </div>
+        </div>
+        <div class="why-conclusion">${why.conclusion || ''}</div>
+      </div>
+    `;
+  }
+
+  // =========================================================================
   // AI Investigation Panel
   // =========================================================================
 
@@ -556,7 +648,7 @@
     if (!inv) return '';
 
     const status = inv.status === 'resolved' ? 'resolved' : 'escalated';
-    const statusLabel = status === 'resolved' ? 'Resolved' : 'Escalated to Human';
+    const statusLabel = status === 'resolved' ? '✓ Resolved' : '⚠ Escalated to Human';
     const steps = inv.investigation_steps || [];
     const findings = inv.findings_summary || [];
 
@@ -574,7 +666,7 @@
       <div class="inv-step">
         <div class="inv-step-icon">${toolIcons[s.tool] || '🔧'}</div>
         <div class="inv-step-content">
-          <div class="inv-step-title">${s.description}</div>
+          <div class="inv-step-title">✓ ${s.description}</div>
           <div class="inv-step-result">${s.conclusion}</div>
         </div>
       </div>
@@ -592,7 +684,6 @@
       </div>
     ` : '';
 
-    // Uncertainty analysis
     const uncertainty = inv.uncertainty_analysis || {};
     const primaryType = uncertainty.primary_uncertainty || '';
     const overallSeverity = uncertainty.overall_severity || 0;
@@ -601,7 +692,7 @@
       <div class="card investigation-card">
         <div class="investigation-header">
           <div class="agent-icon">🤖</div>
-          <h3>AI Case Investigation</h3>
+          <h3>AI Investigation</h3>
           <span class="inv-status ${status}">${statusLabel}</span>
         </div>
         ${primaryType ? `
@@ -649,7 +740,7 @@
         
         ${alreadyHtml ? `
           <div class="brief-section">
-            <div class="brief-section-title">✅ Already Investigated by AI</div>
+            <div class="brief-section-title">✅ Already Investigated by EVIDRA</div>
             ${alreadyHtml}
           </div>
         ` : ''}
@@ -662,6 +753,75 @@
         ` : ''}
         
         ${brief.time_saved_estimate ? `<div class="time-saved">⏱️ ${brief.time_saved_estimate}</div>` : ''}
+      </div>
+    `;
+  }
+
+  // =========================================================================
+  // Next Best Action (replaces raw What-If)
+  // =========================================================================
+
+  function renderNextBestAction(whatif, currentWinProb) {
+    const items = whatif?.missing_evidence_ranked || [];
+
+    if (!items.length) {
+      return `<div class="card"><div class="card-title"><span class="title-icon">🎯</span> Next Best Action</div><p style="color:var(--text-dim);font-size:13px;">All required evidence submitted. No further action needed.</p></div>`;
+    }
+
+    const best = items[0];
+    const currentPct = (currentWinProb * 100).toFixed(0);
+    const projectedPct = ((currentWinProb + best.expected_improvement) * 100).toFixed(0);
+    const deltaPct = (best.expected_improvement * 100).toFixed(0);
+    const evidenceType = fmtReason(best.missing_evidence_type);
+
+    // Additional missing evidence as smaller items
+    const otherItems = items.slice(1).map(item => {
+      const pct = (item.expected_improvement * 100).toFixed(1);
+      const isPos = item.expected_improvement >= 0;
+      return `
+        <div class="whatif-item">
+          <span class="whatif-type">${fmtReason(item.missing_evidence_type)}</span>
+          <div class="whatif-right">
+            <span class="whatif-improvement ${isPos ? '' : 'negative'}">${isPos ? '+' : ''}${pct}%</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <div class="card next-best-action-card">
+        <div class="card-title"><span class="title-icon">🎯</span> Next Best Action</div>
+        <div class="nba-content">
+          <div class="nba-action-name">Get ${evidenceType}</div>
+          <div class="nba-probability-row">
+            <div class="nba-prob-box">
+              <div class="nba-prob-label">Current</div>
+              <div class="nba-prob-value current">${currentPct}%</div>
+            </div>
+            <div class="nba-arrow">
+              <span class="nba-delta">+${deltaPct}%</span>
+              <span class="nba-arrow-icon">→</span>
+            </div>
+            <div class="nba-prob-box">
+              <div class="nba-prob-label">Projected</div>
+              <div class="nba-prob-value projected">${projectedPct}%</div>
+            </div>
+          </div>
+          <div class="nba-reason">
+            <strong>Why?</strong> ${evidenceType} directly addresses the dispute reason and has the highest expected impact among currently missing evidence.
+            Assumed validity of new document: ${(best.assumed_validity_rate_of_new_doc * 100).toFixed(0)}%.
+          </div>
+          <div class="nba-actions">
+            <button class="btn-action">📎 Find Evidence</button>
+            <button class="btn-action">📧 Generate Request</button>
+          </div>
+        </div>
+        ${otherItems ? `
+          <div style="margin-top:16px; border-top:1px solid var(--border-subtle); padding-top:14px;">
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-dim);font-weight:600;margin-bottom:10px;">Other Missing Evidence</div>
+            ${otherItems}
+          </div>
+        ` : ''}
       </div>
     `;
   }
@@ -697,48 +857,90 @@
 
     return `
       <div class="card">
-        <div class="card-title"><span class="title-icon">🔍</span> Evidence Verifier</div>
+        <div class="card-title"><span class="title-icon">🔍</span> Evidence Analysis</div>
         ${itemsHtml}
       </div>
     `;
   }
 
   // =========================================================================
-  // What-If
+  // Decision Timeline
   // =========================================================================
 
-  function renderWhatIf(whatif) {
-    const items = whatif?.missing_evidence_ranked || [];
+  function renderDecisionTimeline(timeline) {
+    if (!timeline || !timeline.length) return '';
 
-    if (!items.length) {
-      return `<div class="card"><div class="card-title"><span class="title-icon">🔮</span> What-If Analysis</div><p style="color:var(--text-dim);font-size:13px;">All required evidence submitted.</p></div>`;
-    }
-
-    const maxImp = Math.max(...items.map(i => Math.abs(i.expected_improvement)), 0.01);
-
-    const itemsHtml = items.map(item => {
-      const pct = (item.expected_improvement * 100).toFixed(1);
-      const isPos = item.expected_improvement >= 0;
-      const barW = Math.min(Math.abs(item.expected_improvement) / maxImp * 100, 100);
-
+    const itemsHtml = timeline.map(t => {
+      const time = new Date(t.timestamp).toLocaleTimeString();
       return `
-        <div class="whatif-item">
-          <span class="whatif-type">${fmtReason(item.missing_evidence_type)}</span>
-          <div class="whatif-right">
-            <span class="whatif-improvement ${isPos ? '' : 'negative'}">${isPos ? '+' : ''}${pct}%</span>
-            <div class="whatif-bar">
-              <div class="whatif-bar-fill" style="width:${barW}%;${!isPos ? 'background:var(--grad-danger);' : ''}"></div>
-            </div>
+        <div class="timeline-item">
+          <div class="timeline-line">
+            <div class="timeline-dot"></div>
+            <div class="timeline-connector"></div>
+          </div>
+          <div class="timeline-content">
+            <div class="timeline-event">${t.event}</div>
+            <div class="timeline-detail">${t.detail}</div>
+            <div class="timeline-time">${time}</div>
           </div>
         </div>
       `;
     }).join('');
 
     return `
-      <div class="card">
-        <div class="card-title"><span class="title-icon">🔮</span> What-If Analysis</div>
-        <p style="font-size:12px;color:var(--text-dim);margin:-8px 0 14px;">Impact of obtaining missing evidence</p>
-        ${itemsHtml}
+      <div class="card timeline-card">
+        <div class="card-title"><span class="title-icon">⏱️</span> Decision Timeline</div>
+        <div class="decision-timeline">${itemsHtml}</div>
+      </div>
+    `;
+  }
+
+  // =========================================================================
+  // Uncertainty Explanation
+  // =========================================================================
+
+  function renderUncertaintyExplanation(ue) {
+    if (!ue) return '';
+
+    const badgeClass = (ue.confidence_level || 'medium').toLowerCase();
+    const badgeLabels = { high: 'HIGH CONFIDENCE', medium: 'MEDIUM CONFIDENCE', low: 'LOW CONFIDENCE' };
+
+    const confirmedHtml = (ue.confirmed || []).map(c => `
+      <div class="uncertainty-item">
+        <span class="uncertainty-icon">✓</span>
+        <span>${c}</span>
+      </div>
+    `).join('');
+
+    const concernsHtml = (ue.concerns || []).map(c => `
+      <div class="uncertainty-item">
+        <span class="uncertainty-icon">⚠</span>
+        <span>${c}</span>
+      </div>
+    `).join('');
+
+    return `
+      <div class="card uncertainty-card">
+        <div class="card-title"><span class="title-icon">🤖</span> Why Am I ${badgeClass === 'high' ? 'Confident' : 'Uncertain'}?</div>
+        <div class="confidence-badge ${badgeClass}">${badgeLabels[badgeClass] || 'UNKNOWN'}</div>
+        
+        ${confirmedHtml ? `
+          <div class="uncertainty-section">
+            <div class="uncertainty-section-title">The system found</div>
+            ${confirmedHtml}
+          </div>
+        ` : ''}
+        
+        ${concernsHtml ? `
+          <div class="uncertainty-section">
+            <div class="uncertainty-section-title">However</div>
+            ${concernsHtml}
+          </div>
+        ` : ''}
+        
+        ${ue.recommendation ? `
+          <div class="uncertainty-recommendation">💡 ${ue.recommendation}</div>
+        ` : ''}
       </div>
     `;
   }
@@ -761,7 +963,6 @@
 
       let html = '';
 
-      // Agent Metrics
       if (metricsRes.status === 'fulfilled' && metricsRes.value.ok) {
         const data = await metricsRes.value.json();
         const s = data.session || {};
@@ -772,7 +973,7 @@
             <div class="analytics-stat-card indigo">
               <div class="analytics-stat-label">Total Disputes</div>
               <div class="analytics-stat-value indigo">${s.total_disputes || 0}</div>
-              <div class="analytics-stat-sub">Processed by the system</div>
+              <div class="analytics-stat-sub">Processed by EVIDRA</div>
             </div>
             <div class="analytics-stat-card emerald">
               <div class="analytics-stat-label">Automation Rate</div>
@@ -785,12 +986,12 @@
               <div class="analytics-stat-sub">Escalated to humans</div>
             </div>
             <div class="analytics-stat-card violet">
-              <div class="analytics-stat-label">Agent Investigated</div>
+              <div class="analytics-stat-label">AI Investigated</div>
               <div class="analytics-stat-value violet">${s.agent_investigated || 0}</div>
-              <div class="analytics-stat-sub">AI agent deep-dives</div>
+              <div class="analytics-stat-sub">Uncertainty investigations</div>
             </div>
             <div class="analytics-stat-card cyan">
-              <div class="analytics-stat-label">Agent Resolution Rate</div>
+              <div class="analytics-stat-label">AI Resolution Rate</div>
               <div class="analytics-stat-value cyan">${s.agent_investigated ? `${(s.agent_resolution_rate * 100).toFixed(1)}%` : '—'}</div>
               <div class="analytics-stat-sub">Resolved without human</div>
             </div>
@@ -802,7 +1003,6 @@
           </div>
         `;
 
-        // Feedback breakdown
         if (fb.total_overrides !== undefined) {
           const reasons = fb.reason_distribution || {};
           const maxCount = Math.max(...Object.values(reasons), 1);
@@ -844,7 +1044,6 @@
         }
       }
 
-      // Model Performance
       if (modelRes.status === 'fulfilled' && modelRes.value.ok) {
         const modelData = await modelRes.value.json();
         
@@ -884,7 +1083,7 @@
         }
       }
 
-      container.innerHTML = html || '<div class="loading">No analytics data available.</div>';
+      container.innerHTML = html || '<div class="loading">No analytics data available. Analyze some disputes first.</div>';
     } catch (err) {
       container.innerHTML = `<div class="loading" style="color:var(--neon-rose);">Failed to load analytics: ${err.message}</div>`;
     }
@@ -968,7 +1167,6 @@
     }
   }
 
-  // Audit filters
   document.getElementById('btn-refresh-audit')?.addEventListener('click', loadAuditLog);
   
   let auditSearchTimeout;
@@ -989,7 +1187,6 @@
     if (settingsInitialized) return;
     settingsInitialized = true;
 
-    // Slider handlers
     const uncertaintySlider = document.getElementById('setting-uncertainty');
     const uncertaintyVal = document.getElementById('setting-uncertainty-val');
     if (uncertaintySlider && uncertaintyVal) {
@@ -1073,14 +1270,13 @@
       if (res.ok) {
         feedbackModal.classList.add('hidden');
         document.getElementById('feedback-notes').value = '';
-        // Show brief success indicator
         const btn = document.querySelector('.btn-override');
         if (btn) {
           btn.textContent = '✓ Feedback Recorded';
           btn.style.color = 'var(--neon-emerald)';
           btn.style.borderColor = 'rgba(52, 211, 153, 0.2)';
           setTimeout(() => {
-            btn.textContent = '✏️ Override Decision';
+            btn.textContent = '✏️ Override';
             btn.style.color = '';
             btn.style.borderColor = '';
           }, 3000);

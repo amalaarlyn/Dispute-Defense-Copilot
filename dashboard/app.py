@@ -1,7 +1,7 @@
 """
-Dispute Defense Copilot — Dashboard API Server.
+EVIDRA — Dashboard API Server.
 
-Flask application serving the dashboard UI and REST API endpoints.
+Flask application serving the EVIDRA dashboard UI and REST API endpoints.
 
 Endpoints:
     GET  /                          — Dashboard UI
@@ -9,6 +9,7 @@ Endpoints:
     GET  /api/disputes/<id>         — Full pipeline analysis for a dispute
     POST /api/disputes/<id>/feedback — Submit human override feedback
     GET  /api/agent-metrics         — Agent performance metrics
+    GET  /api/automation-impact     — AI automation impact metrics
     GET  /api/metrics               — Model evaluation metrics
     GET  /api/audit-log             — Query the audit trail
 """
@@ -47,7 +48,7 @@ try:
     predictor_model = joblib.load(os.path.join(MODELS_DIR, "outcome_predictor.joblib"))
     log_model_loaded("evidence_verifier", os.path.join(MODELS_DIR, "evidence_verifier.joblib"))
     log_model_loaded("outcome_predictor", os.path.join(MODELS_DIR, "outcome_predictor.joblib"))
-    _logger.info("Dashboard: models loaded successfully")
+    _logger.info("EVIDRA: models loaded successfully")
 except FileNotFoundError:
     print("Warning: Models not found. Run src/train.py first.")
     _logger.warning("Models not found — run src/train.py first")
@@ -155,6 +156,33 @@ def get_agent_metrics():
         "feedback": feedback,
     })
 
+@app.route("/api/automation-impact")
+def get_automation_impact():
+    """Get the AI automation impact metrics — the headline business metric.
+    
+    Returns:
+        disputes_analyzed: total disputes processed
+        ai_resolved_automatically: disputes resolved without human
+        human_reviews_required: disputes that needed human review
+        human_review_reduction: % reduction vs baseline
+        baseline_comparison: what it would have been without the AI agent
+    """
+    session = get_session_metrics()
+    s = session.to_dict()
+    
+    return jsonify({
+        "disputes_analyzed": s["total_disputes"],
+        "ai_resolved_automatically": s["auto_resolved"] + s["agent_resolved"],
+        "human_reviews_required": s["escalated_to_human"],
+        "human_review_reduction": round(s["human_review_reduction"] * 100, 1),
+        "automation_rate": round(s["automation_coverage"] * 100, 1),
+        "agent_investigated": s["agent_investigated"],
+        "agent_resolved": s["agent_resolved"],
+        "agent_resolution_rate": round(s["agent_resolution_rate"] * 100, 1),
+        "baseline_human_review_rate": round(s["baseline_human_review_rate"] * 100, 1),
+        "current_human_review_rate": round(s["human_review_rate"] * 100, 1),
+    })
+
 @app.route("/api/feedback-options")
 def get_feedback_options():
     """Get available feedback reason categories."""
@@ -191,5 +219,5 @@ def get_audit_log():
     return jsonify({"count": len(entries), "entries": entries})
 
 if __name__ == "__main__":
-    _logger.info("Starting Dispute Defense Copilot dashboard on port 5000")
+    _logger.info("Starting EVIDRA dashboard on port 5000")
     app.run(debug=True, port=5000)
