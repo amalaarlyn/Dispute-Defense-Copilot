@@ -3,459 +3,283 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EVIDRA — AI Evidence Intelligence for Payment Disputes</title>
-    <meta name="description" content="EVIDRA investigates chargebacks automatically, identifies the strongest missing evidence, predicts the outcome of contesting, and escalates only cases where AI cannot resolve the uncertainty.">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <title>EVIDRA — Evidence Intelligence</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
     <div class="app-shell">
-        <!-- Top Navigation -->
-        <nav class="top-nav">
-            <div class="nav-brand">
-                <div class="nav-logo">◆</div>
-                <div>
-                    <span class="nav-title">EVIDRA</span>
-                    <span class="nav-subtitle">AI Evidence Intelligence</span>
-                </div>
-            </div>
-            <div class="nav-actions">
-                <div class="nav-status">
-                    <div class="status-indicator">
-                        <span class="status-dot online" id="agent-status-dot"></span>
-                        <span id="agent-status-text">System Online</span>
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="brand">
+                    <div class="brand-logo"></div>
+                    <div class="brand-text">
+                        <span class="brand-name">EVIDRA</span>
+                        <span class="brand-tagline">Evidence Intelligence</span>
                     </div>
                 </div>
             </div>
-        </nav>
 
-        <!-- Main Body: Nav Rail + Page Content -->
-        <div class="app-body">
-            <!-- Nav Rail (Vertical Icon Nav) -->
-            <nav class="nav-rail" id="nav-rail">
-                <div class="nav-rail-top">
-                    <a href="#/dashboard" class="nav-rail-item active" data-page="dashboard" data-tooltip="Dashboard">
-                        <div class="nav-rail-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
-                                <rect x="14" y="3" width="7" height="4" rx="1.5"></rect>
-                                <rect x="3" y="14" width="7" height="4" rx="1.5"></rect>
-                                <rect x="14" y="11" width="7" height="7" rx="1.5"></rect>
-                            </svg>
-                        </div>
-                        <span class="nav-rail-label">Dashboard</span>
-                    </a>
-                    <a href="#/disputes" class="nav-rail-item" data-page="disputes" data-tooltip="Disputes">
-                        <div class="nav-rail-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                <polyline points="14 2 14 8 20 8"></polyline>
-                                <line x1="16" y1="13" x2="8" y2="13"></line>
-                                <line x1="16" y1="17" x2="8" y2="17"></line>
-                                <polyline points="10 9 9 9 8 9"></polyline>
-                            </svg>
-                        </div>
-                        <span class="nav-rail-label">Disputes</span>
-                    </a>
-                    <a href="#/analytics" class="nav-rail-item" data-page="analytics" data-tooltip="Analytics">
-                        <div class="nav-rail-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="18" y1="20" x2="18" y2="10"></line>
-                                <line x1="12" y1="20" x2="12" y2="4"></line>
-                                <line x1="6" y1="20" x2="6" y2="14"></line>
-                            </svg>
-                        </div>
-                        <span class="nav-rail-label">Analytics</span>
-                    </a>
-                    <a href="#/audit" class="nav-rail-item" data-page="audit" data-tooltip="Audit Log">
-                        <div class="nav-rail-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                            </svg>
-                        </div>
-                        <span class="nav-rail-label">Audit Log</span>
-                    </a>
-                    <a href="#/settings" class="nav-rail-item" data-page="settings" data-tooltip="Settings">
-                        <div class="nav-rail-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="3"></circle>
-                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                            </svg>
-                        </div>
-                        <span class="nav-rail-label">Settings</span>
-                    </a>
+            <div class="nav-section">
+                <a href="#/overview" class="nav-item active" data-page="overview">
+                    <span class="mono" style="margin-right:8px; opacity:0.5;">01</span> Overview
+                </a>
+                <a href="#/disputes" class="nav-item" data-page="disputes">
+                    <span class="mono" style="margin-right:8px; opacity:0.5;">02</span> Disputes
+                </a>
+                <a href="#/queue" class="nav-item" data-page="queue">
+                    <span class="mono" style="margin-right:8px; opacity:0.5;">03</span> Resolution Queue
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <a href="#/analytics" class="nav-item" data-page="analytics">
+                    <span class="mono" style="margin-right:8px; opacity:0.5;">04</span> Analytics
+                </a>
+                <a href="#/audit" class="nav-item" data-page="audit">
+                    <span class="mono" style="margin-right:8px; opacity:0.5;">05</span> Audit Trail
+                </a>
+            </div>
+
+            <div class="sidebar-footer">
+                <div style="font-weight:600; text-transform:uppercase; margin-bottom:12px; color:var(--text-secondary-light);">System Status</div>
+                <div class="sys-status-row">
+                    <span>Dispute Pipeline</span>
+                    <div class="status-dot"></div>
                 </div>
-            </nav>
+                <div class="sys-status-row">
+                    <span>Evidence Verification</span>
+                    <div class="status-dot"></div>
+                </div>
+                <div class="sys-status-row">
+                    <span>AI Investigator</span>
+                    <div class="status-dot"></div>
+                </div>
+                <div class="sys-status-row">
+                    <span>Audit Logging</span>
+                    <div class="status-dot"></div>
+                </div>
+                
+                <div style="margin-top:24px; padding-top:12px; border-top:1px dotted rgba(255,255,255,0.1);">
+                    Environment: Prototype<br>
+                    Data: Synthetic Benchmark
+                </div>
+            </div>
+        </aside>
 
-            <!-- Page Container (router swaps visibility) -->
+        <!-- Main Workspace -->
+        <main class="main-content">
             <div class="page-container" id="page-container">
 
-                <!-- ==================== PAGE: Dashboard ==================== -->
-                <section class="page" id="page-dashboard">
-                    <div class="page-scroll">
-                        <div class="page-header">
+                <!-- ==================== OVERVIEW PAGE ==================== -->
+                <section class="page" id="page-overview">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">Dispute Operations</h1>
+                            <p class="page-subtitle">Live defense intelligence</p>
+                        </div>
+                        <div>
+                            <span class="mono" style="color:var(--text-muted-dark);">LIVE — <span id="current-time"></span></span>
+                        </div>
+                    </div>
+
+                    <!-- Command Strip -->
+                    <div class="command-strip" id="command-strip">
+                        <div class="cmd-stat">
+                            <div class="cmd-stat-label">Open Disputes</div>
+                            <div class="cmd-stat-value" id="cs-open">—</div>
+                        </div>
+                        <div class="cmd-stat warning">
+                            <div class="cmd-stat-label">Requires Action</div>
+                            <div class="cmd-stat-value" id="cs-action">—</div>
+                        </div>
+                        <div class="cmd-stat safe">
+                            <div class="cmd-stat-label">AI Resolved</div>
+                            <div class="cmd-stat-value" id="cs-resolved">—</div>
+                        </div>
+                        <div class="cmd-stat warning">
+                            <div class="cmd-stat-label">Human Review</div>
+                            <div class="cmd-stat-value" id="cs-human">—</div>
+                        </div>
+                        <div class="cmd-stat critical">
+                            <div class="cmd-stat-label">Critical Deadlines</div>
+                            <div class="cmd-stat-value" id="cs-critical">—</div>
+                        </div>
+                    </div>
+
+                    <!-- Priority Action Queue -->
+                    <div class="table-section">
+                        <div class="table-header">
                             <div>
-                                <h1 class="page-title">Dashboard</h1>
-                                <p class="page-subtitle">AI-powered dispute resolution intelligence</p>
-                            </div>
-                            <div class="page-header-actions">
-                                <button class="btn btn-ghost" id="btn-refresh-dashboard">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="14" height="14"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
-                                    Refresh
-                                </button>
+                                <div class="table-title">Priority Queue</div>
+                                <div class="table-desc">Cases ranked by expected loss, evidence strength and deadline pressure.</div>
                             </div>
                         </div>
-
-                        <!-- Metric Cards Row -->
-                        <div class="dash-metrics" id="dash-metrics">
-                            <div class="dash-metric-card">
-                                <div class="dash-metric-icon" style="background: rgba(99,102,241,0.12); color: var(--neon-indigo);">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-                                </div>
-                                <div class="dash-metric-info">
-                                    <span class="dash-metric-label">Disputes Analyzed</span>
-                                    <span class="dash-metric-value" id="dm-total">—</span>
-                                </div>
-                            </div>
-                            <div class="dash-metric-card">
-                                <div class="dash-metric-icon" style="background: rgba(52,211,153,0.12); color: var(--neon-emerald);">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                                </div>
-                                <div class="dash-metric-info">
-                                    <span class="dash-metric-label">AI Automation Rate</span>
-                                    <span class="dash-metric-value" id="dm-automation">—</span>
-                                </div>
-                            </div>
-                            <div class="dash-metric-card">
-                                <div class="dash-metric-icon" style="background: rgba(251,191,36,0.12); color: var(--neon-amber);">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                                </div>
-                                <div class="dash-metric-info">
-                                    <span class="dash-metric-label">Human Review Rate</span>
-                                    <span class="dash-metric-value" id="dm-human">—</span>
-                                </div>
-                            </div>
-                            <div class="dash-metric-card">
-                                <div class="dash-metric-icon" style="background: rgba(167,139,250,0.12); color: var(--neon-violet);">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
-                                </div>
-                                <div class="dash-metric-info">
-                                    <span class="dash-metric-label">Review Reduction</span>
-                                    <span class="dash-metric-value" id="dm-reduction">—</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- AI Automation Impact Card -->
-                        <div class="card automation-impact-card" id="automation-impact-card">
-                            <div class="card-title"><span class="title-icon">🤖</span> AI Automation Impact</div>
-                            <div class="automation-impact-grid" id="automation-impact-content">
-                                <div class="loading">Analyze disputes to see automation impact…</div>
-                            </div>
-                        </div>
-
-                        <!-- Two Column: Recent Disputes + System Health -->
-                        <div class="dash-grid">
-                            <div class="card dash-recent-card">
-                                <div class="card-title"><span class="title-icon">📋</span> Recent Disputes</div>
-                                <div id="dash-recent-list" class="dash-recent-list">
-                                    <div class="loading">Loading…</div>
-                                </div>
-                                <a href="#/disputes" class="dash-view-all">View all disputes →</a>
-                            </div>
-                            <div class="card dash-health-card">
-                                <div class="card-title"><span class="title-icon">🔋</span> System Health</div>
-                                <div class="dash-health-items">
-                                    <div class="dash-health-row">
-                                        <span class="dash-health-label">ML Models</span>
-                                        <span class="dash-health-status online" id="health-models">Loaded</span>
-                                    </div>
-                                    <div class="dash-health-row">
-                                        <span class="dash-health-label">API Server</span>
-                                        <span class="dash-health-status online" id="health-api">Running</span>
-                                    </div>
-                                    <div class="dash-health-row">
-                                        <span class="dash-health-label">AI Investigator</span>
-                                        <span class="dash-health-status online" id="health-agent">Online</span>
-                                    </div>
-                                    <div class="dash-health-row">
-                                        <span class="dash-health-label">Data Pipeline</span>
-                                        <span class="dash-health-status online" id="health-pipeline">Active</span>
-                                    </div>
-                                </div>
-                                <div class="card-title" style="margin-top:20px;"><span class="title-icon">📊</span> Model Performance</div>
-                                <div id="dash-model-metrics" class="dash-model-metrics">
-                                    <div class="loading">Loading…</div>
-                                </div>
-                            </div>
-                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Priority</th>
+                                    <th>Dispute ID</th>
+                                    <th>Merchant</th>
+                                    <th>Amount</th>
+                                    <th>Reason</th>
+                                    <th>Contest Prob</th>
+                                    <th>Deadline</th>
+                                    <th>Resolution State</th>
+                                </tr>
+                            </thead>
+                            <tbody id="action-queue-body">
+                                <tr>
+                                    <td colspan="8" style="text-align:center; padding: 40px; color:var(--text-muted-dark);">
+                                        <div class="state-icon">[ ]</div>
+                                        <div>Loading priority queue...</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </section>
 
-                <!-- ==================== PAGE: Disputes ==================== -->
+                <!-- ==================== DISPUTE DETAIL PAGE ==================== -->
                 <section class="page hidden" id="page-disputes">
-                    <div class="disputes-layout">
-                        <!-- Nested Sidebar (dispute list) -->
-                        <aside class="sidebar">
-                            <div class="sidebar-header">
-                                <div class="sidebar-title">Disputes</div>
-                                <div class="search-box">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                                        <circle cx="11" cy="11" r="8"></circle>
-                                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                                    </svg>
-                                    <input type="text" id="search-input" placeholder="Search disputes...">
-                                </div>
-                            </div>
-                            <div class="dispute-list" id="dispute-list">
-                                <div class="loading">Loading disputes…</div>
-                            </div>
-                        </aside>
-
-                        <!-- Dispute Main Content -->
-                        <main class="main-content">
-                            <!-- Empty State -->
-                            <div id="empty-state" class="empty-state">
-                                <div class="empty-icon">◆</div>
-                                <h1>Select a Dispute to Analyze</h1>
-                                <p>EVIDRA will evaluate evidence, predict outcomes, investigate uncertainty, and recommend the optimal action — all in real time.</p>
-                            </div>
-
-                            <!-- Analysis View (populated by JS) -->
-                            <div id="analysis-view" class="main-scroll analysis-view hidden"></div>
-                        </main>
-                    </div>
-                </section>
-
-                <!-- ==================== PAGE: Analytics ==================== -->
-                <section class="page hidden" id="page-analytics">
-                    <div class="page-scroll">
-                        <div class="page-header">
-                            <div>
-                                <h1 class="page-title">Analytics</h1>
-                                <p class="page-subtitle">EVIDRA performance and dispute resolution metrics</p>
-                            </div>
-                        </div>
-                        <div id="analytics-content">
-                            <div class="loading">Loading analytics…</div>
+                    <div id="dispute-detail-view">
+                        <div class="state-container">
+                            <div class="state-icon">[ ]</div>
+                            <div>Select a dispute from the Overview or Queue to begin investigation.</div>
                         </div>
                     </div>
                 </section>
 
-                <!-- ==================== PAGE: Audit Log ==================== -->
+                <!-- ==================== AUDIT TRAIL PAGE ==================== -->
                 <section class="page hidden" id="page-audit">
-                    <div class="page-scroll">
-                        <div class="page-header">
-                            <div>
-                                <h1 class="page-title">Audit Log</h1>
-                                <p class="page-subtitle">Complete decision trail and system activity</p>
-                            </div>
-                            <div class="page-header-actions">
-                                <div class="audit-filters">
-                                    <input type="text" id="audit-search" class="audit-search-input" placeholder="Filter by dispute ID…">
-                                    <select id="audit-type-filter" class="audit-select">
-                                        <option value="">All Events</option>
-                                        <option value="api_request">API Request</option>
-                                        <option value="model_loaded">Model Loaded</option>
-                                        <option value="feedback">Feedback</option>
-                                    </select>
-                                    <button class="btn btn-ghost" id="btn-refresh-audit">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="14" height="14"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
-                                        Refresh
-                                    </button>
-                                </div>
-                            </div>
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">Audit Trail</h1>
+                            <p class="page-subtitle">Immutable record of system decisions and human actions</p>
                         </div>
-                        <div id="audit-content">
-                            <div class="loading">Loading audit log…</div>
+                    </div>
+                    
+                    <div class="table-section">
+                        <div class="table-header" style="background:var(--bg-surface-alt);">
+                            <div style="display:flex; gap:16px;">
+                                <input type="text" id="audit-filter-id" placeholder="Filter by Dispute ID..." style="padding:6px 12px; border:1px solid var(--border-subtle); border-radius:2px; font-size:12px;">
+                                <select id="audit-filter-actor" style="padding:6px 12px; border:1px solid var(--border-subtle); border-radius:2px; font-size:12px;">
+                                    <option value="">All Actors</option>
+                                    <option value="SYSTEM">SYSTEM</option>
+                                    <option value="AI INVESTIGATOR">AI INVESTIGATOR</option>
+                                    <option value="HUMAN ANALYST">HUMAN ANALYST</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-secondary" id="btn-refresh-audit">Refresh Log</button>
                         </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Dispute</th>
+                                    <th>Event</th>
+                                    <th>Actor</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody id="audit-log-body">
+                                <tr><td colspan="5" style="text-align:center;">Loading audit trail...</td></tr>
+                            </tbody>
+                        </table>
                     </div>
                 </section>
 
-                <!-- ==================== PAGE: Settings ==================== -->
-                <section class="page hidden" id="page-settings">
-                    <div class="page-scroll">
-                        <div class="page-header">
-                            <div>
-                                <h1 class="page-title">Settings</h1>
-                                <p class="page-subtitle">EVIDRA configuration and preferences</p>
+                <!-- ==================== ANALYTICS PAGE ==================== -->
+                <section class="page hidden" id="page-analytics">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">Analytics & Automation Coverage</h1>
+                            <p class="page-subtitle">How much work can EVIDRA safely resolve without human intervention?</p>
+                        </div>
+                    </div>
+
+                    <div class="workspace-grid">
+                        <!-- Coverage Stats -->
+                        <div class="panel">
+                            <div class="panel-header">
+                                <div class="panel-title">Automation Coverage (Synthetic Benchmark)</div>
+                            </div>
+                            <div class="panel-body">
+                                <div style="display:flex; justify-content:space-between; margin-bottom:24px;">
+                                    <div>
+                                        <div style="font-size:11px; color:var(--text-muted-dark); text-transform:uppercase;">Baseline Human Review</div>
+                                        <div class="mono" style="font-size:32px; font-weight:600; color:var(--text-secondary-dark);">100%</div>
+                                    </div>
+                                    <div style="text-align:right;">
+                                        <div style="font-size:11px; color:var(--text-muted-dark); text-transform:uppercase;">EVIDRA Human Review</div>
+                                        <div class="mono" style="font-size:32px; font-weight:600; color:var(--sem-safe);" id="metric-evidra-review">—</div>
+                                    </div>
+                                </div>
+                                
+                                <div style="height:12px; display:flex; border-radius:2px; overflow:hidden; margin-bottom:12px; background:var(--bg-surface-alt);">
+                                    <div id="coverage-bar-auto" style="width:0%; background:var(--sem-safe); transition:width 1s;"></div>
+                                    <div id="coverage-bar-human" style="width:0%; background:var(--sem-warning); transition:width 1s;"></div>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted-dark); text-transform:uppercase;">
+                                    <span>AI Resolved</span>
+                                    <span>Escalated</span>
+                                </div>
+                                
+                                <div style="margin-top:40px; padding:16px; background:var(--bg-surface-alt); border-radius:2px; font-size:12px; line-height:1.6;">
+                                    <strong>Operational insight:</strong> The product optimizes for SAFE AUTOMATION. More automation is not automatically better. Escalation to human review is a deliberate risk-management feature, not a system failure.
+                                </div>
                             </div>
                         </div>
-                        <div class="settings-content">
-                            <div class="card settings-section">
-                                <div class="card-title"><span class="title-icon">🤖</span> AI Investigation Configuration</div>
-                                <div class="settings-row">
-                                    <div class="settings-label">
-                                        <span class="settings-name">Uncertainty Threshold</span>
-                                        <span class="settings-desc">Minimum uncertainty score to trigger AI investigation</span>
-                                    </div>
-                                    <div class="settings-control">
-                                        <input type="range" min="0" max="100" value="30" class="settings-slider" id="setting-uncertainty">
-                                        <span class="settings-slider-value" id="setting-uncertainty-val">0.30</span>
-                                    </div>
-                                </div>
-                                <div class="settings-row">
-                                    <div class="settings-label">
-                                        <span class="settings-name">Auto-Contest Confidence</span>
-                                        <span class="settings-desc">Minimum win probability to auto-contest without human review</span>
-                                    </div>
-                                    <div class="settings-control">
-                                        <input type="range" min="0" max="100" value="85" class="settings-slider" id="setting-confidence">
-                                        <span class="settings-slider-value" id="setting-confidence-val">0.85</span>
-                                    </div>
-                                </div>
-                                <div class="settings-row">
-                                    <div class="settings-label">
-                                        <span class="settings-name">AI Investigation</span>
-                                        <span class="settings-desc">Allow EVIDRA to autonomously investigate uncertain cases</span>
-                                    </div>
-                                    <div class="settings-control">
-                                        <label class="toggle-switch">
-                                            <input type="checkbox" checked id="setting-agent-enabled">
-                                            <span class="toggle-slider"></span>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
 
-                            <div class="card settings-section">
-                                <div class="card-title"><span class="title-icon">🔔</span> Notifications</div>
-                                <div class="settings-row">
-                                    <div class="settings-label">
-                                        <span class="settings-name">High-Value Alerts</span>
-                                        <span class="settings-desc">Notify for disputes above ₹50,000</span>
-                                    </div>
-                                    <div class="settings-control">
-                                        <label class="toggle-switch">
-                                            <input type="checkbox" checked>
-                                            <span class="toggle-slider"></span>
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="settings-row">
-                                    <div class="settings-label">
-                                        <span class="settings-name">Deadline Warnings</span>
-                                        <span class="settings-desc">Alert when disputes are within 24h of deadline</span>
-                                    </div>
-                                    <div class="settings-control">
-                                        <label class="toggle-switch">
-                                            <input type="checkbox" checked>
-                                            <span class="toggle-slider"></span>
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="settings-row">
-                                    <div class="settings-label">
-                                        <span class="settings-name">Tamper Detection Alerts</span>
-                                        <span class="settings-desc">Highlight disputes with potential evidence tampering</span>
-                                    </div>
-                                    <div class="settings-control">
-                                        <label class="toggle-switch">
-                                            <input type="checkbox" checked>
-                                            <span class="toggle-slider"></span>
-                                        </label>
-                                    </div>
-                                </div>
+                        <!-- Raw Stats -->
+                        <div class="panel">
+                            <div class="panel-header">
+                                <div class="panel-title">Session Volumes</div>
                             </div>
-
-                            <div class="card settings-section">
-                                <div class="card-title"><span class="title-icon">🎨</span> Display</div>
-                                <div class="settings-row">
-                                    <div class="settings-label">
-                                        <span class="settings-name">Theme</span>
-                                        <span class="settings-desc">Visual appearance of the dashboard</span>
-                                    </div>
-                                    <div class="settings-control">
-                                        <select class="settings-select">
-                                            <option>Dark (Default)</option>
-                                            <option disabled>Light (Coming Soon)</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="settings-row">
-                                    <div class="settings-label">
-                                        <span class="settings-name">Compact Mode</span>
-                                        <span class="settings-desc">Reduce spacing for information density</span>
-                                    </div>
-                                    <div class="settings-control">
-                                        <label class="toggle-switch">
-                                            <input type="checkbox">
-                                            <span class="toggle-slider"></span>
-                                        </label>
-                                    </div>
-                                </div>
+                            <div class="panel-body" id="analytics-raw-stats">
+                                <div class="state-icon">[ ]</div>
                             </div>
                         </div>
                     </div>
                 </section>
 
-            </div>
-        </div>
+                <!-- ==================== QUEUE PAGE ==================== -->
+                <section class="page hidden" id="page-queue">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">Resolution Queue</h1>
+                            <p class="page-subtitle">Disputes staged for final action</p>
+                        </div>
+                    </div>
+                    <div class="state-container">
+                        <div class="state-icon">[ QUEUE ]</div>
+                        <div>Queue management interface under construction.</div>
+                    </div>
+                </section>
 
-        <!-- Bottom Metrics Ribbon -->
-        <div class="metrics-ribbon" id="metrics-ribbon">
-            <div class="metric-pill">
-                <span class="metric-pill-label">Disputes Analyzed</span>
-                <span class="metric-pill-value accent" id="m-total">0</span>
             </div>
-            <div class="metric-pill">
-                <span class="metric-pill-label">AI Automation</span>
-                <span class="metric-pill-value highlight" id="m-automation">—</span>
-            </div>
-            <div class="metric-pill">
-                <span class="metric-pill-label">Human Review</span>
-                <span class="metric-pill-value warning" id="m-human-rate">—</span>
-            </div>
-            <div class="metric-pill">
-                <span class="metric-pill-label">AI Resolution</span>
-                <span class="metric-pill-value highlight" id="m-agent-rate">—</span>
-            </div>
-            <div class="metric-pill">
-                <span class="metric-pill-label">Review Reduction</span>
-                <span class="metric-pill-value highlight" id="m-reduction">—</span>
-            </div>
-        </div>
+        </main>
     </div>
 
-    <!-- Feedback Modal (hidden by default) -->
-    <div id="feedback-modal" class="modal-overlay hidden">
-        <div class="modal">
-            <h3>Override AI Recommendation</h3>
-            <p class="modal-sub">Your feedback helps EVIDRA learn. What is the correct action?</p>
-            
-            <div class="modal-field">
-                <label>Your Decision</label>
-                <select id="feedback-decision">
-                    <option value="contest">Contest the Dispute</option>
-                    <option value="accept">Accept the Chargeback</option>
-                    <option value="obtain_evidence">Gather More Evidence</option>
-                    <option value="human_review">Needs Further Human Review</option>
+    <!-- Human Override Modal -->
+    <div id="override-modal" class="hidden" style="position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:100;">
+        <div style="background:var(--bg-surface); padding:24px; border-radius:4px; width:400px; box-shadow:0 10px 30px rgba(0,0,0,0.2);">
+            <div style="font-weight:600; font-size:14px; margin-bottom:16px; text-transform:uppercase;">Manual Override</div>
+            <div style="margin-bottom:16px;">
+                <label style="display:block; font-size:11px; font-weight:500; margin-bottom:4px; color:var(--text-muted-dark);">Decision</label>
+                <select id="override-decision" style="width:100%; padding:8px; border:1px solid var(--border-strong); border-radius:2px; font-size:13px;">
+                    <option value="contest">APPROVE CONTEST</option>
+                    <option value="accept">ACCEPT DISPUTE</option>
+                    <option value="obtain_evidence">REQUEST EVIDENCE</option>
                 </select>
             </div>
-            
-            <div class="modal-field">
-                <label>Reason for Override</label>
-                <select id="feedback-reason">
-                    <option value="evidence_not_sufficient">Evidence not sufficient</option>
-                    <option value="business_context_not_captured">Business context not captured</option>
-                    <option value="customer_exception">Customer exception / goodwill</option>
-                    <option value="document_issue">Document issue / quality</option>
-                    <option value="risk_tolerance_different">Different risk tolerance</option>
-                    <option value="deadline_concern">Deadline concern</option>
-                    <option value="other">Other</option>
-                </select>
+            <div style="margin-bottom:24px;">
+                <label style="display:block; font-size:11px; font-weight:500; margin-bottom:4px; color:var(--text-muted-dark);">Audit Reason</label>
+                <textarea id="override-reason" style="width:100%; height:80px; padding:8px; border:1px solid var(--border-strong); border-radius:2px; font-size:13px;" placeholder="Required for compliance logging..."></textarea>
             </div>
-            
-            <div class="modal-field">
-                <label>Notes (Optional)</label>
-                <textarea id="feedback-notes" placeholder="Any additional context..."></textarea>
-            </div>
-            
-            <div class="modal-actions">
-                <button class="btn btn-ghost" id="feedback-cancel">Cancel</button>
-                <button class="btn btn-primary" id="feedback-submit">Submit Feedback</button>
+            <div style="display:flex; justify-content:flex-end; gap:8px;">
+                <button class="btn btn-secondary" id="btn-cancel-override">Cancel</button>
+                <button class="btn btn-primary" id="btn-submit-override">Submit to Audit Log</button>
             </div>
         </div>
     </div>

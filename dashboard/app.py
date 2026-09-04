@@ -219,5 +219,5 @@ def get_audit_log():
     return jsonify({"count": len(entries), "entries": entries})
 
 if __name__ == "__main__":
-    _logger.info("Starting EVIDRA dashboard on port 5000")
-    app.run(debug=True, port=5000)
+    _logger.info("Starting EVIDRA dashboard on port 8080")
+    app.run(debug=True, port=8080)
