@@ -53,6 +53,8 @@ except FileNotFoundError:
     print("Warning: Models not found. Run src/train.py first.")
     _logger.warning("Models not found — run src/train.py first")
 
+_simulated_evidence = {}
+
 def get_disputes_data():
     if not os.path.exists(DATA_PATH):
         return []
@@ -69,6 +71,11 @@ def get_disputes_data():
             groups[did] = []
         groups[did].append(r)
         
+    # Inject simulated evidence
+    for did, new_evidence_rows in _simulated_evidence.items():
+        if did in groups:
+            groups[did].extend(new_evidence_rows)
+            
     # Take first 100 for the dashboard
     sample_dids = list(groups.keys())[:100]
     return {did: groups[did] for did in sample_dids}
@@ -142,6 +149,50 @@ def submit_feedback(dispute_id):
                  dispute_id, ai_recommendation, human_decision, reason)
     
     return jsonify({"status": "recorded", "feedback": entry})
+
+@app.route("/api/disputes/<dispute_id>/find-evidence", methods=["POST"])
+def find_evidence(dispute_id):
+    """Simulate finding missing evidence in internal CRM/Billing systems."""
+    body = request.get_json(force=True)
+    evidence_type = body.get("evidence_type")
+    
+    if not evidence_type:
+        return jsonify({"error": "evidence_type is required"}), 400
+        
+    data = get_disputes_data()
+    if dispute_id not in data:
+        return jsonify({"error": "Dispute not found"}), 404
+        
+    base_row = data[dispute_id][0]
+    
+    # Create a simulated row for the newly found evidence
+    simulated_row = base_row.copy()
+    simulated_row["evidence_type"] = evidence_type
+    simulated_row["evidence_is_valid_label"] = "True"
+    simulated_row["tamper_flag_label"] = "False"
+    
+    if dispute_id not in _simulated_evidence:
+        _simulated_evidence[dispute_id] = []
+        
+    # Check if we already injected this type to avoid duplicates
+    existing = [r for r in _simulated_evidence[dispute_id] if r["evidence_type"] == evidence_type]
+    if not existing:
+        _simulated_evidence[dispute_id].append(simulated_row)
+        _logger.info("Simulated finding evidence %s for dispute %s", evidence_type, dispute_id)
+        
+    return jsonify({"status": "success", "message": f"Successfully retrieved {evidence_type} from internal systems."})
+
+@app.route("/api/disputes/<dispute_id>/generate-request", methods=["POST"])
+def generate_request(dispute_id):
+    """Simulate drafting and sending an email request to the merchant."""
+    body = request.get_json(force=True)
+    evidence_type = body.get("evidence_type")
+    
+    if not evidence_type:
+        return jsonify({"error": "evidence_type is required"}), 400
+        
+    _logger.info("Simulated sending request for %s for dispute %s", evidence_type, dispute_id)
+    return jsonify({"status": "success", "message": f"Automated email requesting {evidence_type} drafted and queued for delivery."})
 
 @app.route("/api/agent-metrics")
 def get_agent_metrics():

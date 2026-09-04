@@ -403,9 +403,12 @@
           ${hasAgent ? renderInvestigation(investigation) : ''}
           ${humanBrief ? renderHumanBrief(humanBrief) : ''}
           ${renderUncertaintyExplanation(data.uncertainty_explanation)}
+          <div class="dash-grid" style="margin-bottom: 24px;">
+            ${renderCaseBrief(data.investigation_brief)}
+            ${renderNextBestAction(data.whatif_results, data.win_probability, data.dispute_id)}
+          </div>
         </div>
         <div>
-          ${renderNextBestAction(data.whatif_results, data.win_probability)}
           ${renderEvidence(data.verifier_results)}
           ${renderDecisionTimeline(data.decision_timeline)}
         </div>
@@ -761,7 +764,7 @@
   // Next Best Action (replaces raw What-If)
   // =========================================================================
 
-  function renderNextBestAction(whatif, currentWinProb) {
+  function renderNextBestAction(whatif, currentWinProb, disputeId) {
     const items = whatif?.missing_evidence_ranked || [];
 
     if (!items.length) {
@@ -812,8 +815,8 @@
             Assumed validity of new document: ${(best.assumed_validity_rate_of_new_doc * 100).toFixed(0)}%.
           </div>
           <div class="nba-actions">
-            <button class="btn-action" onclick="alert('Simulated Action: Fetching ' + '${evidenceType}' + ' from internal databases...')">📎 Find Evidence</button>
-            <button class="btn-action" onclick="alert('Simulated Action: Drafting automated evidence request email to merchant for ' + '${evidenceType}' + '...')">📧 Generate Request</button>
+            <button class="btn-action" onclick="window.handleFindEvidence('${disputeId}', '${best.missing_evidence_type}')" id="btn-find-evidence">📎 Find Evidence</button>
+            <button class="btn-action" onclick="window.handleGenerateRequest('${disputeId}', '${best.missing_evidence_type}')" id="btn-gen-request">📧 Generate Request</button>
           </div>
         </div>
         ${otherItems ? `
