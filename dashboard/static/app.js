@@ -226,7 +226,7 @@
                 <!-- LEFT COLUMN: Decision & Investigation -->
                 <div>
                     <!-- Contest Readiness -->
-                    <div class="panel">
+                    <div class="panel glass-panel">
                         <div class="panel-header">
                             <div class="panel-title">Contest Readiness</div>
                         </div>
@@ -281,7 +281,7 @@
                 <div>
                     ${renderNextBestEvidence(data.whatif_results, data.win_probability)}
                     
-                    <div class="panel">
+                    <div class="panel glass-panel">
                         <div class="panel-header">
                             <div class="panel-title">Evidence Intelligence</div>
                         </div>
@@ -342,7 +342,7 @@
         const resolved = inv.status === 'resolved';
 
         return `
-            <div class="panel">
+            <div class="panel glass-panel">
                 <div class="panel-header">
                     <div class="panel-title">AI Investigator</div>
                     <span class="badge ${resolved ? 'safe' : 'warning'}">${resolved ? 'INVESTIGATION COMPLETE' : 'ESCALATED'}</span>
@@ -376,7 +376,7 @@
         const projPct = curPct + delta;
 
         return `
-            <div class="panel">
+            <div class="panel glass-panel">
                 <div class="panel-header">
                     <div class="panel-title">Next Best Evidence</div>
                 </div>
@@ -494,8 +494,8 @@
     function renderHumanReview(data) {
         const brief = data.case_brief;
         return `
-            <div class="panel" style="border-color:var(--sem-warning);">
-                <div class="panel-header" style="background:var(--sem-warning-bg);">
+            <div class="panel glass-panel" style="border-color:var(--sem-warning);">
+                <div class="panel-header" style="background:rgba(255,94,0,0.1);">
                     <div class="panel-title" style="color:var(--sem-warning);">Human Review Required</div>
                 </div>
                 <div class="panel-body">

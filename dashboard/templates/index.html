@@ -4,12 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EVIDRA — Evidence Intelligence</title>
+    <!-- Modern Vibrant Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+    <!-- Vibrant Glowing Background Orbs -->
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
+    <div class="bg-orb bg-orb-3"></div>
+
     <div class="app-shell">
         <!-- Sidebar Navigation -->
-        <aside class="sidebar">
+        <aside class="sidebar glass-panel">
             <div class="sidebar-header">
                 <div class="brand">
                     <div class="brand-logo"></div>
@@ -22,27 +31,32 @@
 
             <div class="nav-section">
                 <a href="#/overview" class="nav-item active" data-page="overview">
-                    <span class="mono" style="margin-right:8px; opacity:0.5;">01</span> Overview
+                    <div class="nav-glow"></div>
+                    <span class="mono nav-num">01</span> Overview
                 </a>
                 <a href="#/disputes" class="nav-item" data-page="disputes">
-                    <span class="mono" style="margin-right:8px; opacity:0.5;">02</span> Disputes
+                    <div class="nav-glow"></div>
+                    <span class="mono nav-num">02</span> Disputes
                 </a>
                 <a href="#/queue" class="nav-item" data-page="queue">
-                    <span class="mono" style="margin-right:8px; opacity:0.5;">03</span> Resolution Queue
+                    <div class="nav-glow"></div>
+                    <span class="mono nav-num">03</span> Resolution Queue
                 </a>
             </div>
 
             <div class="nav-section">
                 <a href="#/analytics" class="nav-item" data-page="analytics">
-                    <span class="mono" style="margin-right:8px; opacity:0.5;">04</span> Analytics
+                    <div class="nav-glow"></div>
+                    <span class="mono nav-num">04</span> Analytics
                 </a>
                 <a href="#/audit" class="nav-item" data-page="audit">
-                    <span class="mono" style="margin-right:8px; opacity:0.5;">05</span> Audit Trail
+                    <div class="nav-glow"></div>
+                    <span class="mono nav-num">05</span> Audit Trail
                 </a>
             </div>
 
             <div class="sidebar-footer">
-                <div style="font-weight:600; text-transform:uppercase; margin-bottom:12px; color:var(--text-secondary-light);">System Status</div>
+                <div style="font-weight:600; font-family:'Outfit', sans-serif; font-size:11px; text-transform:uppercase; margin-bottom:12px; color:var(--text-muted-light); letter-spacing:0.05em;">System Status</div>
                 <div class="sys-status-row">
                     <span>Dispute Pipeline</span>
                     <div class="status-dot"></div>
@@ -60,7 +74,7 @@
                     <div class="status-dot"></div>
                 </div>
                 
-                <div style="margin-top:24px; padding-top:12px; border-top:1px dotted rgba(255,255,255,0.1);">
+                <div style="margin-top:24px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.05); font-size:10px; color:var(--text-muted-light);">
                     Environment: Prototype<br>
                     Data: Synthetic Benchmark
                 </div>
@@ -79,71 +93,73 @@
                             <p class="page-subtitle">Live defense intelligence</p>
                         </div>
                         <div>
-                            <span class="mono" style="color:var(--text-muted-dark);">LIVE — <span id="current-time"></span></span>
+                            <span class="mono" style="color:var(--text-muted-dark); font-size:12px;">LIVE <span class="glow-dot"></span> <span id="current-time"></span></span>
                         </div>
                     </div>
 
                     <!-- Command Strip -->
                     <div class="command-strip" id="command-strip">
-                        <div class="cmd-stat">
+                        <div class="cmd-stat glass-panel">
                             <div class="cmd-stat-label">Open Disputes</div>
                             <div class="cmd-stat-value" id="cs-open">—</div>
                         </div>
-                        <div class="cmd-stat warning">
+                        <div class="cmd-stat glass-panel warning">
                             <div class="cmd-stat-label">Requires Action</div>
                             <div class="cmd-stat-value" id="cs-action">—</div>
                         </div>
-                        <div class="cmd-stat safe">
+                        <div class="cmd-stat glass-panel safe">
                             <div class="cmd-stat-label">AI Resolved</div>
                             <div class="cmd-stat-value" id="cs-resolved">—</div>
                         </div>
-                        <div class="cmd-stat warning">
+                        <div class="cmd-stat glass-panel warning">
                             <div class="cmd-stat-label">Human Review</div>
                             <div class="cmd-stat-value" id="cs-human">—</div>
                         </div>
-                        <div class="cmd-stat critical">
+                        <div class="cmd-stat glass-panel critical">
                             <div class="cmd-stat-label">Critical Deadlines</div>
                             <div class="cmd-stat-value" id="cs-critical">—</div>
                         </div>
                     </div>
 
                     <!-- Priority Action Queue -->
-                    <div class="table-section">
+                    <div class="table-section glass-panel">
                         <div class="table-header">
                             <div>
                                 <div class="table-title">Priority Queue</div>
                                 <div class="table-desc">Cases ranked by expected loss, evidence strength and deadline pressure.</div>
                             </div>
                         </div>
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Priority</th>
-                                    <th>Dispute ID</th>
-                                    <th>Merchant</th>
-                                    <th>Amount</th>
-                                    <th>Reason</th>
-                                    <th>Contest Prob</th>
-                                    <th>Deadline</th>
-                                    <th>Resolution State</th>
-                                </tr>
-                            </thead>
-                            <tbody id="action-queue-body">
-                                <tr>
-                                    <td colspan="8" style="text-align:center; padding: 40px; color:var(--text-muted-dark);">
-                                        <div class="state-icon">[ ]</div>
-                                        <div>Loading priority queue...</div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <div style="overflow-x:auto;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Priority</th>
+                                        <th>Dispute ID</th>
+                                        <th>Merchant</th>
+                                        <th>Amount</th>
+                                        <th>Reason</th>
+                                        <th>Contest Prob</th>
+                                        <th>Deadline</th>
+                                        <th>Resolution State</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="action-queue-body">
+                                    <tr>
+                                        <td colspan="8" style="text-align:center; padding: 40px; color:var(--text-muted-dark);">
+                                            <div class="state-icon">[ ]</div>
+                                            <div>Loading priority queue...</div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </section>
 
                 <!-- ==================== DISPUTE DETAIL PAGE ==================== -->
                 <section class="page hidden" id="page-disputes">
                     <div id="dispute-detail-view">
-                        <div class="state-container">
+                        <div class="state-container glass-panel" style="margin-top:20px;">
                             <div class="state-icon">[ ]</div>
                             <div>Select a dispute from the Overview or Queue to begin investigation.</div>
                         </div>
@@ -159,11 +175,11 @@
                         </div>
                     </div>
                     
-                    <div class="table-section">
-                        <div class="table-header" style="background:var(--bg-surface-alt);">
+                    <div class="table-section glass-panel">
+                        <div class="table-header" style="background:rgba(255,255,255,0.02);">
                             <div style="display:flex; gap:16px;">
-                                <input type="text" id="audit-filter-id" placeholder="Filter by Dispute ID..." style="padding:6px 12px; border:1px solid var(--border-subtle); border-radius:2px; font-size:12px;">
-                                <select id="audit-filter-actor" style="padding:6px 12px; border:1px solid var(--border-subtle); border-radius:2px; font-size:12px;">
+                                <input type="text" id="audit-filter-id" placeholder="Filter by Dispute ID..." class="glass-input">
+                                <select id="audit-filter-actor" class="glass-input">
                                     <option value="">All Actors</option>
                                     <option value="SYSTEM">SYSTEM</option>
                                     <option value="AI INVESTIGATOR">AI INVESTIGATOR</option>
@@ -172,20 +188,22 @@
                             </div>
                             <button class="btn btn-secondary" id="btn-refresh-audit">Refresh Log</button>
                         </div>
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Timestamp</th>
-                                    <th>Dispute</th>
-                                    <th>Event</th>
-                                    <th>Actor</th>
-                                    <th>Details</th>
-                                </tr>
-                            </thead>
-                            <tbody id="audit-log-body">
-                                <tr><td colspan="5" style="text-align:center;">Loading audit trail...</td></tr>
-                            </tbody>
-                        </table>
+                        <div style="overflow-x:auto;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Timestamp</th>
+                                        <th>Dispute</th>
+                                        <th>Event</th>
+                                        <th>Actor</th>
+                                        <th>Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="audit-log-body">
+                                    <tr><td colspan="5" style="text-align:center; color:var(--text-muted-dark);">Loading audit trail...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </section>
 
@@ -200,7 +218,7 @@
 
                     <div class="workspace-grid">
                         <!-- Coverage Stats -->
-                        <div class="panel">
+                        <div class="panel glass-panel">
                             <div class="panel-header">
                                 <div class="panel-title">Automation Coverage (Synthetic Benchmark)</div>
                             </div>
@@ -216,23 +234,23 @@
                                     </div>
                                 </div>
                                 
-                                <div style="height:12px; display:flex; border-radius:2px; overflow:hidden; margin-bottom:12px; background:var(--bg-surface-alt);">
-                                    <div id="coverage-bar-auto" style="width:0%; background:var(--sem-safe); transition:width 1s;"></div>
-                                    <div id="coverage-bar-human" style="width:0%; background:var(--sem-warning); transition:width 1s;"></div>
+                                <div style="height:12px; display:flex; border-radius:12px; overflow:hidden; margin-bottom:12px; background:rgba(255,255,255,0.05); box-shadow:inset 0 1px 3px rgba(0,0,0,0.5);">
+                                    <div id="coverage-bar-auto" style="width:0%; background:var(--sem-safe); box-shadow:0 0 10px var(--sem-safe); transition:width 1s;"></div>
+                                    <div id="coverage-bar-human" style="width:0%; background:var(--sem-warning); box-shadow:0 0 10px var(--sem-warning); transition:width 1s;"></div>
                                 </div>
-                                <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted-dark); text-transform:uppercase;">
-                                    <span>AI Resolved</span>
-                                    <span>Escalated</span>
+                                <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted-dark); text-transform:uppercase; font-family:'Outfit', sans-serif;">
+                                    <span style="color:var(--sem-safe);">AI Resolved</span>
+                                    <span style="color:var(--sem-warning);">Escalated</span>
                                 </div>
                                 
-                                <div style="margin-top:40px; padding:16px; background:var(--bg-surface-alt); border-radius:2px; font-size:12px; line-height:1.6;">
+                                <div style="margin-top:40px; padding:16px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); border-radius:8px; font-size:13px; line-height:1.6;">
                                     <strong>Operational insight:</strong> The product optimizes for SAFE AUTOMATION. More automation is not automatically better. Escalation to human review is a deliberate risk-management feature, not a system failure.
                                 </div>
                             </div>
                         </div>
 
                         <!-- Raw Stats -->
-                        <div class="panel">
+                        <div class="panel glass-panel">
                             <div class="panel-header">
                                 <div class="panel-title">Session Volumes</div>
                             </div>
@@ -251,7 +269,7 @@
                             <p class="page-subtitle">Disputes staged for final action</p>
                         </div>
                     </div>
-                    <div class="state-container">
+                    <div class="state-container glass-panel" style="margin-top:20px;">
                         <div class="state-icon">[ QUEUE ]</div>
                         <div>Queue management interface under construction.</div>
                     </div>
@@ -262,22 +280,22 @@
     </div>
 
     <!-- Human Override Modal -->
-    <div id="override-modal" class="hidden" style="position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:100;">
-        <div style="background:var(--bg-surface); padding:24px; border-radius:4px; width:400px; box-shadow:0 10px 30px rgba(0,0,0,0.2);">
-            <div style="font-weight:600; font-size:14px; margin-bottom:16px; text-transform:uppercase;">Manual Override</div>
-            <div style="margin-bottom:16px;">
-                <label style="display:block; font-size:11px; font-weight:500; margin-bottom:4px; color:var(--text-muted-dark);">Decision</label>
-                <select id="override-decision" style="width:100%; padding:8px; border:1px solid var(--border-strong); border-radius:2px; font-size:13px;">
+    <div id="override-modal" class="hidden" style="position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.6); backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center; z-index:100;">
+        <div class="glass-panel" style="padding:32px; border-radius:16px; width:450px; border:1px solid rgba(255,255,255,0.1); box-shadow:0 25px 50px rgba(0,0,0,0.5);">
+            <div style="font-family:'Outfit', sans-serif; font-weight:600; font-size:18px; margin-bottom:24px; color:var(--text-primary-light);">Manual Override</div>
+            <div style="margin-bottom:20px;">
+                <label style="display:block; font-size:12px; font-weight:500; margin-bottom:8px; color:var(--text-muted-light);">Decision</label>
+                <select id="override-decision" class="glass-input" style="width:100%;">
                     <option value="contest">APPROVE CONTEST</option>
                     <option value="accept">ACCEPT DISPUTE</option>
                     <option value="obtain_evidence">REQUEST EVIDENCE</option>
                 </select>
             </div>
-            <div style="margin-bottom:24px;">
-                <label style="display:block; font-size:11px; font-weight:500; margin-bottom:4px; color:var(--text-muted-dark);">Audit Reason</label>
-                <textarea id="override-reason" style="width:100%; height:80px; padding:8px; border:1px solid var(--border-strong); border-radius:2px; font-size:13px;" placeholder="Required for compliance logging..."></textarea>
+            <div style="margin-bottom:32px;">
+                <label style="display:block; font-size:12px; font-weight:500; margin-bottom:8px; color:var(--text-muted-light);">Audit Reason</label>
+                <textarea id="override-reason" class="glass-input" style="width:100%; height:100px; resize:none;" placeholder="Required for compliance logging..."></textarea>
             </div>
-            <div style="display:flex; justify-content:flex-end; gap:8px;">
+            <div style="display:flex; justify-content:flex-end; gap:12px;">
                 <button class="btn btn-secondary" id="btn-cancel-override">Cancel</button>
                 <button class="btn btn-primary" id="btn-submit-override">Submit to Audit Log</button>
             </div>
