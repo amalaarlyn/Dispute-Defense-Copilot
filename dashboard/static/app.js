@@ -520,7 +520,7 @@
 
     return `
       <div class="card glass-panel recommendation-card ${decision}">
-        <div class="card glass-panel-title"><span class="title-icon">⚖️</span> Recommendation</div>
+        <div class="card-title"><span class="title-icon">⚖️</span> Recommendation</div>
         <div class="action-badge ${decision}">${labels[decision] || decision}</div>
         <p class="narrative">${data.decision?.reason || data.narrative || ''}</p>
         ${agentTag}
@@ -538,7 +538,7 @@
 
     return `
       <div class="card glass-panel case-brief-card">
-        <div class="card glass-panel-title"><span class="title-icon">📝</span> AI Case Brief</div>
+        <div class="card-title"><span class="title-icon">📝</span> AI Case Brief</div>
         <div class="case-brief-text">${brief}</div>
       </div>
     `;
@@ -551,7 +551,7 @@
   function renderGauge(winProb) {
     return `
       <div class="card glass-panel" style="text-align:center;">
-        <div class="card glass-panel-title" style="justify-content:center;"><span class="title-icon">📊</span> Contest Likelihood</div>
+        <div class="card-title" style="justify-content:center;"><span class="title-icon">📊</span> Contest Likelihood</div>
         <div class="gauge-container">
           <svg viewBox="0 0 100 55" class="gauge">
             <defs>
@@ -608,7 +608,7 @@
 
     return `
       <div class="card glass-panel why-decision-card">
-        <div class="card glass-panel-title"><span class="title-icon">❓</span> Why This Decision?</div>
+        <div class="card-title"><span class="title-icon">❓</span> Why This Decision?</div>
         <div class="why-decision-grid">
           <div class="why-metric">
             <div class="why-metric-label">Evidence Strength</div>
@@ -674,7 +674,7 @@
 
     const findingsHtml = findings.length ? `
       <div class="findings-list">
-        <div class="card glass-panel-title"><span class="title-icon">💡</span> Key Findings</div>
+        <div class="card-title"><span class="title-icon">💡</span> Key Findings</div>
         ${findings.map(f => `
           <div class="finding-item">
             <span class="finding-bullet">▸</span>
@@ -735,7 +735,7 @@
 
     return `
       <div class="card glass-panel human-brief-card" style="position:relative;">
-        <div class="card glass-panel-title"><span class="title-icon">📋</span> AI Investigation Brief for Human</div>
+        <div class="card-title"><span class="title-icon">📋</span> AI Investigation Brief for Human</div>
         <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">${brief.summary || ''}</p>
         
         ${alreadyHtml ? `
@@ -765,7 +765,7 @@
     const items = whatif?.missing_evidence_ranked || [];
 
     if (!items.length) {
-      return `<div class="card glass-panel"><div class="card glass-panel-title"><span class="title-icon">🎯</span> Next Best Action</div><p style="color:var(--text-dim);font-size:13px;">All required evidence submitted. No further action needed.</p></div>`;
+      return `<div class="card glass-panel"><div class="card-title"><span class="title-icon">🎯</span> Next Best Action</div><p style="color:var(--text-dim);font-size:13px;">All required evidence submitted. No further action needed.</p></div>`;
     }
 
     const best = items[0];
@@ -790,7 +790,7 @@
 
     return `
       <div class="card glass-panel next-best-action-card">
-        <div class="card glass-panel-title"><span class="title-icon">🎯</span> Next Best Action</div>
+        <div class="card-title"><span class="title-icon">🎯</span> Next Best Action</div>
         <div class="nba-content">
           <div class="nba-action-name">Get ${evidenceType}</div>
           <div class="nba-probability-row">
@@ -832,7 +832,7 @@
 
   function renderEvidence(results) {
     if (!results || !results.length) {
-      return `<div class="card glass-panel"><div class="card glass-panel-title"><span class="title-icon">🔍</span> Evidence Verifier</div><p style="color:var(--text-dim);font-size:13px;">No evidence submitted.</p></div>`;
+      return `<div class="card glass-panel"><div class="card-title"><span class="title-icon">🔍</span> Evidence Verifier</div><p style="color:var(--text-dim);font-size:13px;">No evidence submitted.</p></div>`;
     }
 
     const itemsHtml = results.map(r => {
@@ -857,7 +857,7 @@
 
     return `
       <div class="card glass-panel">
-        <div class="card glass-panel-title"><span class="title-icon">🔍</span> Evidence Analysis</div>
+        <div class="card-title"><span class="title-icon">🔍</span> Evidence Analysis</div>
         ${itemsHtml}
       </div>
     `;
@@ -889,7 +889,7 @@
 
     return `
       <div class="card glass-panel timeline-card">
-        <div class="card glass-panel-title"><span class="title-icon">⏱️</span> Decision Timeline</div>
+        <div class="card-title"><span class="title-icon">⏱️</span> Decision Timeline</div>
         <div class="decision-timeline">${itemsHtml}</div>
       </div>
     `;
@@ -921,7 +921,7 @@
 
     return `
       <div class="card glass-panel uncertainty-card">
-        <div class="card glass-panel-title"><span class="title-icon">🤖</span> Why Am I ${badgeClass === 'high' ? 'Confident' : 'Uncertain'}?</div>
+        <div class="card-title"><span class="title-icon">🤖</span> Why Am I ${badgeClass === 'high' ? 'Confident' : 'Uncertain'}?</div>
         <div class="confidence-badge ${badgeClass}">${badgeLabels[badgeClass] || 'UNKNOWN'}</div>
         
         ${confirmedHtml ? `
@@ -1053,7 +1053,7 @@
 
           html += `
             <div class="card glass-panel">
-              <div class="card glass-panel-title"><span class="title-icon">📝</span> Human Override Feedback</div>
+              <div class="card-title"><span class="title-icon">📝</span> Human Override Feedback</div>
               <div class="analytics-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 20px;">
                 <div>
                   <div class="analytics-stat-label">Total Overrides</div>
@@ -1103,7 +1103,7 @@
 
           return `
             <div class="card glass-panel">
-              <div class="card glass-panel-title"><span class="title-icon">🧠</span> ${name}</div>
+              <div class="card-title"><span class="title-icon">🧠</span> ${name}</div>
               <table class="model-perf-table">
                 <thead>
                   <tr>
